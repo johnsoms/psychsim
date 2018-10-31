@@ -24,13 +24,18 @@ class Scenario:
                  F_ACTORS=0,
                  F_START_LOC=[],
                  F_GOAL_LOC=[],
+                 F_ENERGY=[],
                  E_ACTORS=0,
                  E_START_LOC=[],
                  E_PATROL_RANGE=5,
                  D_ACTORS=0,
                  D_START_LOC=[],
+                 S_ACTORS=0,
+                 S_ENERGY=[],
+                 S_START_LOC=[],
                  BASE=[0.0, 0.0],
                  DISTRACTOR=[0.0, 0.0],
+                 SUPPLIER=[0.0, 0.0],
                  ENEMY=[0.0, 0.0, 0.0],
                  AGENT=[0.0, 0.0]):
 
@@ -39,13 +44,18 @@ class Scenario:
         self.F_ACTORS = F_ACTORS
         self.F_START_LOC = F_START_LOC
         self.F_GOAL_LOC = F_GOAL_LOC
+        self.F_ENERGY = F_ENERGY
         self.E_ACTORS = E_ACTORS
         self.E_START_LOC = E_START_LOC
         self.E_PATROL_RANGE = E_PATROL_RANGE
         self.D_ACTORS = D_ACTORS
         self.D_START_LOC = D_START_LOC
+        self.S_ACTORS = S_ACTORS
+        self.S_ENERGY = S_ENERGY
+        self.S_START_LOC = S_START_LOC
         self.BASE = BASE
         self.DISTRACTOR = DISTRACTOR
+        self.SUPPLIER = SUPPLIER
         self.ENEMY = ENEMY
         self.AGENT = AGENT
 
@@ -58,6 +68,7 @@ class Scenario:
         self.create_friendly_agents()
         self.create_enemy_agents()
         self.create_distract_agents()
+        self.create_supply_agents()
         self.create_base()
 
         self.paused = False
@@ -85,6 +96,12 @@ class Scenario:
     def f_get_goal_y(self, index):
         return int((self.F_GOAL_LOC[index]).split(",", 1)[1])
 
+    def f_get_start_energy(self, index):
+        return self.F_ENERGY[index]
+
+    def f_get_current_energy(self, actor):
+        return self.world.getState(actor.name, 'energy').domain()[0]
+
     def e_get_current_x(self, actor):
         return self.world.getState(actor.name, 'x').domain()[0]
 
@@ -103,8 +120,29 @@ class Scenario:
     def d_get_start_y(self, index):
         return int((self.D_START_LOC[index]).split(",", 1)[1])
 
+    def s_get_start_x(self, index):
+        return int((self.S_START_LOC[index]).split(",", 1)[0])
+
+    def s_get_start_y(self, index):
+        return int((self.S_START_LOC[index]).split(",", 1)[1])
+
+    def s_get_current_x(self, actor):
+        return self.world.getState(actor.name,'x').domain()[0]
+
+    def s_get_current_y(self, actor):
+        return self.world.getState(actor.name,'y').domain()[0]
+
+    def s_get_start_energy(self, index):
+        return self.S_ENERGY[index]
+
+    def s_get_current_energy(self, actor):
+        return self.world.getState(actor.name, 'energy').domain()[0]
+
     def find_distance(self, start_x, start_y, goal_x, goal_y):
         return abs(goal_x - start_x) + abs(goal_y - start_y)
+
+    def calculateDistance(self,a_x,a_y,s_x,s_y):
+        return math.sqrt((a_x-s_x)^2 + (a_y - s_y)^2)
 
     def create_base(self):
         for index in range(0, self.D_ACTORS):
@@ -119,9 +157,14 @@ class Scenario:
             self.world.setState(base.name, 'y', 0)
 
             # Deploy distractor
-            action = base.addAction({'verb': 'Deploy'})
+            action = base.addAction({'verb': 'DeployDistractor'})
             tree = makeTree(setToConstantMatrix(stateKey('Distractor' + str(index), 'deployed'), True))
             self.world.setDynamics(stateKey('Distractor' + str(index), 'deployed'), action, tree)
+
+            # # Deploy supplier
+            # action = base.addAction({'verb': 'DeploySupplier'})
+            # tree = makeTree(setToConstantMatrix(stateKey('Supplier' + str(index), 'deployed'), True))
+            # self.world.setDynamics(stateKey('Supplier' + str(index), 'deployed'), action, tree)
 
             # Nop
             action = base.addAction({'verb': 'Wait'})
@@ -139,6 +182,15 @@ class Scenario:
 
             base.setReward(minimizeFeature(stateKey('Distractor' + str(index), 'cost')), self.BASE[1])
 
+            # base.setReward(
+            #     minimizeDifference(stateKey('Supplier' + str(index), 'x'), stateKey('Actor' + str(index), 'x')),
+            #     self.BASE[0])
+            # base.setReward(
+            #     minimizeDifference(stateKey('Supplier' + str(index), 'y'), stateKey('Actor' + str(index), 'y')),
+            #     self.BASE[0])
+
+            base.setReward(minimizeFeature(stateKey('Supplier' + str(index), 'cost')), self.BASE[1])
+
     def create_friendly_agents(self):
         for index in range(0, self.F_ACTORS):
             actor = Agent('Actor' + str(index))
@@ -155,6 +207,9 @@ class Scenario:
             self.world.setState(actor.name, 'y', self.f_get_start_y(index))
             self.world.defineState(actor.name, 'goal_y', int)
             self.world.setState(actor.name, 'goal_y', self.f_get_goal_y(index))
+
+            self.world.defineState(actor.name, 'energy', float)
+            self.world.setState(actor.name, 'energy', self.f_get_start_energy(index))
 
             # Positive reward for going towards goal
             actor.setReward(minimizeDifference(stateKey(actor.name, 'x'), stateKey(actor.name, 'goal_x')),
@@ -187,13 +242,16 @@ class Scenario:
         self.world.setDynamics(stateKey(action['subject'], 'y'), action, tree)
         tree = makeTree(incrementMatrix('turns', 1.0))
         self.world.setDynamics(stateKey(None, 'turns'), action, tree)
-
+        tree = makeTree(incrementMatrix(stateKey(action['subject'], 'energy'), 0.0))
+        self.world.setDynamics(stateKey(action['subject'], 'energy'), action, tree)
         # Increment X position
         action = actor.addAction({'verb': 'MoveRight'})
         tree = makeTree(incrementMatrix(stateKey(action['subject'], 'x'), 1.))
         self.world.setDynamics(stateKey(action['subject'], 'x'), action, tree)
         tree = makeTree(incrementMatrix('turns', 1.0))
         self.world.setDynamics('turns', action, tree)
+        tree = makeTree(incrementMatrix(stateKey(action['subject'], 'energy'), -1.0))
+        self.world.setDynamics(stateKey(action['subject'], 'energy'), action, tree)
 
         # Rightmost boundary check
         tree = makeTree({'if': equalRow(stateKey(actor.name, 'x'), str(self.MAP_SIZE_X)),
@@ -208,6 +266,8 @@ class Scenario:
         self.world.setDynamics(stateKey(action['subject'], 'x'), action, tree)
         tree = makeTree(incrementMatrix('turns', 1.0))
         self.world.setDynamics(stateKey(None, 'turns'), action, tree)
+        tree = makeTree(incrementMatrix(stateKey(action['subject'], 'energy'), -1.0))
+        self.world.setDynamics(stateKey(action['subject'], 'energy'), action, tree)
 
         # Leftmost boundary check, min X = 0
         tree = makeTree({'if': equalRow(stateKey(actor.name, 'x'), '0'),
@@ -222,6 +282,8 @@ class Scenario:
         self.world.setDynamics(stateKey(action['subject'], 'y'), action, tree)
         tree = makeTree(incrementMatrix('turns', 1.0))
         self.world.setDynamics(stateKey(None, 'turns'), action, tree)
+        tree = makeTree(incrementMatrix(stateKey(action['subject'], 'energy'), -1.0))
+        self.world.setDynamics(stateKey(action['subject'], 'energy'), action, tree)
 
         # Downmost boundary check, max Y
         tree = makeTree({'if': equalRow(stateKey(actor.name, 'y'), self.MAP_SIZE_Y - 1),
@@ -236,11 +298,15 @@ class Scenario:
         self.world.setDynamics(stateKey(action['subject'], 'y'), action, tree)
         tree = makeTree(incrementMatrix('turns', 1.0))
         self.world.setDynamics(stateKey(None, 'turns'), action, tree)
+        tree = makeTree(incrementMatrix(stateKey(action['subject'], 'energy'), -1.0))
+        self.world.setDynamics(stateKey(action['subject'], 'energy'), action, tree)
 
         # Upmost boundary check, min Y = 0
         tree = makeTree({'if': equalRow(stateKey(actor.name, 'y'), '0'),
                          True: False, False: True})
         actor.setLegal(action, tree)
+
+
 
     def create_distract_agents(self):
         for index in range(0, self.D_ACTORS):
@@ -355,6 +421,148 @@ class Scenario:
         # Upmost boundary check, min Y = 0
         tree = makeTree({'if': equalRow(stateKey(actor.name, 'deployed'), True),
                          True: {'if': equalRow(stateKey(actor.name, 'Y'), 0),
+                                True: False, False: True}, False: False})
+        actor.setLegal(action, tree)
+
+    def create_supply_agents(self):
+        for index in range(0, self.S_ACTORS):
+            actor = Agent('Supplier' + str(index))
+            self.world.addAgent(actor)
+            actor.setHorizon(5)
+
+            # Agent is not allowed to move if not deployed by the base
+            self.world.defineState(actor.name, 'deployed', bool)
+            self.world.setState(actor.name, 'deployed', True)
+
+            # Every time the agent makes an action, there is a cost associated
+            self.world.defineState(actor.name, 'cost', int)
+            self.world.setState(actor.name, 'cost', 0)
+
+            # Set agent's starting location
+            self.world.defineState(actor.name, 'x', int)
+            self.world.setState(actor.name, 'x', 0)
+
+            self.world.defineState(actor.name, 'y', int)
+            self.world.setState(actor.name, 'y', 0)
+
+            self.world.defineState(actor.name, 'energy', float)
+            self.world.setState(actor.name, 'energy', self.s_get_start_energy(index))
+
+            # Positive reward for supplying friendly agents with energy
+            actor.setReward(
+                minimizeDifference(stateKey('Supplier' + str(index), 'x'), stateKey('Actor' + str(index), 'x')),
+                self.SUPPLIER[0])
+            actor.setReward(
+                minimizeDifference(stateKey('Supplier' + str(index), 'y'), stateKey('Actor' + str(index), 'y')),
+                self.SUPPLIER[0])
+
+            # Positive reward for supplying friendly agents with energy
+            actor.setReward(
+                maximizeFeature(stateKey('Actor' + str(index), 'energy')),
+                self.SUPPLIER[1])
+
+            self.set_supply_actions(actor)
+
+    def set_supply_actions(self, actor):
+        # Nop
+        action = actor.addAction({'verb': 'Wait'})
+        tree = makeTree(incrementMatrix(stateKey(action['subject'], 'x'), 0.))
+        self.world.setDynamics(stateKey(action['subject'], 'x'), action, tree)
+        tree = makeTree(incrementMatrix(stateKey(action['subject'], 'y'), 0.))
+        self.world.setDynamics(stateKey(action['subject'], 'y'), action, tree)
+        # Reward for not moving
+        tree = makeTree(incrementMatrix(stateKey(action['subject'], 'cost'), -1.))
+        self.world.setDynamics(stateKey(action['subject'], 'cost'), action, tree)
+
+        tree = makeTree(incrementMatrix(stateKey(action['subject'], 'energy'), 2.))
+        self.world.setDynamics(stateKey(action['subject'], 'energy'), action, tree)
+
+        # Increment X position
+        action = actor.addAction({'verb': 'MoveRight'})
+        tree = makeTree(incrementMatrix(stateKey(action['subject'], 'x'), 1.))
+        self.world.setDynamics(stateKey(action['subject'], 'x'), action, tree)
+
+        # Cost for moving
+        tree = makeTree(incrementMatrix(stateKey(action['subject'], 'cost'), 1.))
+        self.world.setDynamics(stateKey(action['subject'], 'cost'), action, tree)
+
+        # Rightmost boundary check
+        tree = makeTree({'if': equalRow(stateKey(actor.name, 'deployed'), True),
+                         True: {'if': equalRow(stateKey(actor.name, 'x'), str(self.MAP_SIZE_X)),
+                                True: False, False: True}, False: False})
+        actor.setLegal(action, tree)
+
+        ##############################
+
+        # Decrement X position
+        action = actor.addAction({'verb': 'MoveLeft'})
+        tree = makeTree(incrementMatrix(stateKey(action['subject'], 'x'), -1.))
+        self.world.setDynamics(stateKey(action['subject'], 'x'), action, tree)
+
+        # Cost for moving
+        tree = makeTree(incrementMatrix(stateKey(action['subject'], 'cost'), 1.))
+        self.world.setDynamics(stateKey(action['subject'], 'cost'), action, tree)
+
+        # Leftmost boundary check, min X = 0
+        tree = makeTree({'if': equalRow(stateKey(actor.name, 'deployed'), True),
+                         True: {'if': equalRow(stateKey(actor.name, 'x'), 0),
+                                True: False, False: True}, False: False})
+        actor.setLegal(action, tree)
+
+        ##############################
+
+        # Increment Y position
+        action = actor.addAction({'verb': 'MoveUp'})
+        tree = makeTree(incrementMatrix(stateKey(action['subject'], 'y'), 1.))
+        self.world.setDynamics(stateKey(action['subject'], 'y'), action, tree)
+
+        # Cost for moving
+        tree = makeTree(incrementMatrix(stateKey(action['subject'], 'cost'), 1.))
+        self.world.setDynamics(stateKey(action['subject'], 'cost'), action, tree)
+
+        # Downmost boundary check, max Y
+        tree = makeTree({'if': equalRow(stateKey(actor.name, 'deployed'), True),
+                         True: {'if': equalRow(stateKey(actor.name, 'y'), str(self.MAP_SIZE_Y)),
+                                True: False, False: True}, False: False})
+        actor.setLegal(action, tree)
+
+        ##############################
+
+        # Decrement Y position
+        action = actor.addAction({'verb': 'MoveDown'})
+        tree = makeTree(incrementMatrix(stateKey(action['subject'], 'y'), -1.))
+        self.world.setDynamics(stateKey(action['subject'], 'y'), action, tree)
+
+        # Cost for moving
+        tree = makeTree(incrementMatrix(stateKey(action['subject'], 'cost'), 1.))
+        self.world.setDynamics(stateKey(action['subject'], 'cost'), action, tree)
+
+        # Upmost boundary check, min Y = 0
+        tree = makeTree({'if': equalRow(stateKey(actor.name, 'deployed'), True),
+                         True: {'if': equalRow(stateKey(actor.name, 'y'), 0),
+                                True: False, False: True}, False: False})
+        actor.setLegal(action, tree)
+
+        # Supply Allies
+        action = actor.addAction({'verb': 'Supply'})
+        # Effect on actor's energy
+        tree = makeTree(incrementMatrix(stateKey('Actor' + str(0), 'energy'), 2.0/(self.calculateDistance(
+                                                                                        self.f_get_current_x(Agent('Actor' + str(0))),
+                                                                                        self.f_get_current_y(Agent('Actor' + str(0))),
+                                                                                        self.s_get_current_x(actor),
+                                                                                        self.s_get_current_y(actor))+1)))
+        self.world.setDynamics(stateKey('Actor' + str(0), 'energy'), action, tree)
+
+        # Cost for supplying
+        tree = makeTree(incrementMatrix(stateKey(action['subject'], 'cost'), 1.))
+        self.world.setDynamics(stateKey(action['subject'], 'cost'), action, tree)
+
+        tree = makeTree(incrementMatrix(stateKey(action['subject'], 'energy'), -2.))
+        self.world.setDynamics(stateKey(action['subject'], 'energy'), action, tree)
+
+        # Upmost boundary check, min Energy = 0
+        tree = makeTree({'if': equalRow(stateKey(actor.name, 'deployed'), True),
+                         True: {'if': equalRow(stateKey(actor.name, 'energy'), 0),
                                 True: False, False: True}, False: False})
         actor.setLegal(action, tree)
 
@@ -565,7 +773,7 @@ class Scenario:
             result = self.world.step()
             #self.world.explain(result, 2)
         return self.return_score()
-        #self.evaluate_score()
+        self.evaluate_score()
 
     def run_with_visual(self):
         pyglet.resource.path = ['../Resources/teamwork']
@@ -640,6 +848,17 @@ class Scenario:
                 batch=allies_batch)
             )
 
+        supplier_image = pyglet.resource.image("target_old.png")
+        suppliers_batch = pyglet.graphics.Batch()
+        suppliers = []
+        for index in range(0, self.S_ACTORS):
+            suppliers.append(pyglet.sprite.Sprite(
+                img=supplier_image,
+                x=self.s_get_start_x(index) * 32,
+                y=self.s_get_start_y(index) * 32,
+                batch=suppliers_batch)
+            )
+
         @window.event
         def on_draw():
             window.clear()
@@ -648,6 +867,7 @@ class Scenario:
             agents_batch.draw()
             enemies_batch.draw()
             allies_batch.draw()
+            suppliers_batch.draw()
 
         @window.event
         def on_key_press(symbol, modifiers):
@@ -663,7 +883,7 @@ class Scenario:
                 result = self.world.step()
                 self.world.explain(result, 2)
                 if self.world.terminated():
-                    #self.evaluate_score()
+                    self.evaluate_score()
                     window.close()
 
             for index in range(0, self.F_ACTORS):
@@ -678,6 +898,10 @@ class Scenario:
                 distractors[index].x = int(self.world.getState('Distractor' + str(index), 'x').domain()[0]) * 32
                 distractors[index].y = int(self.world.getState('Distractor' + str(index), 'y').domain()[0]) * 32
 
+            for index in range(0, self.S_ACTORS):
+                suppliers[index].x = int(self.world.getState('Supplier' + str(index), 'x').domain()[0]) * 32
+                suppliers[index].y = int(self.world.getState('Supplier' + str(index), 'y').domain()[0]) * 32
+
         pyglet.clock.schedule_interval(update, 0.1)
         # pyglet.app.run()
         Thread(target=pyglet.app.run()).start()
@@ -690,21 +914,28 @@ def run(genome):
     b2 = genome[3]
     h1 = genome[4]
     h2 = genome[5]
+    d1 = genome[6]
+    d2 = genome[7]
 
     run = Scenario(
-        MAP_SIZE_X=5,
-        MAP_SIZE_Y=5,
+        MAP_SIZE_X=7,
+        MAP_SIZE_Y=7,
         F_ACTORS=1,
-        F_START_LOC=["1,1"],
-        F_GOAL_LOC=["4,4"],
+        F_START_LOC=["3,1"],
+        F_GOAL_LOC=["5,5"],
+        F_ENERGY=[10.0],
         E_ACTORS=1,
-        E_START_LOC=["3,3"],
+        E_START_LOC=["6,6"],
         E_PATROL_RANGE=5,
         D_ACTORS=1,
-        D_START_LOC=["0,0"],
+        D_START_LOC=["2,3"],
+        S_ACTORS=1,
+        S_ENERGY=[10.0],
+        S_START_LOC=["1,4"],
         BASE=[b1, b2],
         DISTRACTOR=[h1, h2],
-        ENEMY=[0.5, 0.6, -1.0],
+        SUPPLIER=[d1, d2],
+        ENEMY=[0.5, 0.7, -1.0],
         AGENT=[s1, s2])
     score = run.run_with_visual()
 
@@ -719,7 +950,7 @@ def run(genome):
 
 
 if __name__ == '__main__':
-    print(run([-0.4219082416329605, -0.3776566392876486, 0.43254428266334544, 0.0, -0.6093841194695164, -0.2128550551796511]))
+    print(run([0.4219082416329605, 0.3776566392876486, 0.43254428266334544, 0.0, -0.6093841194695164, 0.2128550551796511,0.5,0.7]))
     '''
     for i1 in range(0,10):
         sg = float(i1/10)

@@ -1,3 +1,4 @@
+import Tkinter
 from Tkinter import *
 from teamwork import *
 from time import sleep
@@ -232,7 +233,7 @@ class AdvancedLoader:
 
 
 if __name__ == '__main__':
-    root = Tk()
+    root = Tkinter.Tk()
     app = BaseLoader(root)
     root.mainloop()
     # root.mainloop()
