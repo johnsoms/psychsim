@@ -2,13 +2,17 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="e5e2ba2b-8b34-4046-bf88-129808d2f254" name="Default" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/Tutoring-for-Team-Training.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Tutoring-for-Team-Training.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/action.py" beforeDir="false" afterPath="$PROJECT_DIR$/action.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/core/teamwork/teamwork.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/teamwork/teamwork.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/readme.md" beforeDir="false" afterPath="$PROJECT_DIR$/readme.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/domains/gameTheory/ultimatum.py" beforeDir="false" afterPath="$PROJECT_DIR$/domains/gameTheory/ultimatum.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/domains/hri/robot.py" beforeDir="false" afterPath="$PROJECT_DIR$/domains/hri/robot.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/domains/negotiation/Full_Ntest.py" beforeDir="false" afterPath="$PROJECT_DIR$/domains/negotiation/Full_Ntest.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/domains/negotiation/Negotiation_legal.py" beforeDir="false" afterPath="$PROJECT_DIR$/domains/negotiation/Negotiation_legal.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/domains/negotiation/Negotiation_loops.py" beforeDir="false" afterPath="$PROJECT_DIR$/domains/negotiation/Negotiation_loops.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/domains/negotiation/Negotiation_rounds.py" beforeDir="false" afterPath="$PROJECT_DIR$/domains/negotiation/Negotiation_rounds.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/domains/teamwork/loader.py" beforeDir="false" afterPath="$PROJECT_DIR$/domains/teamwork/loader.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/domains/teamwork/teamwork.py" beforeDir="false" afterPath="$PROJECT_DIR$/domains/teamwork/teamwork.py" afterDir="false" />
     </list>
     <ignored path="Tutoring-for-Team-Training.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -42,13 +46,57 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/core/teamwork/teamwork.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="405">
-              <caret line="737" column="91" lean-forward="true" selection-start-line="728" selection-start-column="8" selection-end-line="737" selection-end-column="91" />
+            <state relative-caret-position="-6897">
+              <caret line="668" column="77" selection-start-line="668" selection-start-column="77" selection-end-line="668" selection-end-column="77" />
               <folding>
                 <element signature="e#347#394#0" expanded="true" />
                 <element signature="e#4927#7210#0" />
                 <element signature="e#13227#14926#0" />
+                <element signature="e#14979#18699#0" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/externals/psychsim/agent.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="76">
+              <caret line="4" column="34" selection-start-line="4" selection-start-column="34" selection-end-line="4" selection-end-column="34" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/externals/psychsim/reward.py">
+          <provider selected="true" editor-type-id="text-editor" />
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/externals/psychsim/action.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-36">
+              <folding>
+                <element signature="e#0#16#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/externals/psychsim/world.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="240">
+              <caret line="575" column="81" selection-start-line="575" selection-start-column="81" selection-end-line="575" selection-end-column="81" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/externals/psychsim/pwl.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="240">
+              <caret line="746" column="14" selection-start-line="746" selection-start-column="4" selection-end-line="746" selection-end-column="14" />
             </state>
           </provider>
         </entry>
@@ -81,7 +129,11 @@
       <find>supply_</find>
       <find>D_ACTORS</find>
       <find>create_base</find>
+      <find>equalFeatureRow</find>
+      <find>KeyedVector</find>
+      <find>difference</find>
       <find>setDynamics</find>
+      <find>equal</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -528,13 +580,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/externals/psychsim/world.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="64">
-          <caret line="441" column="47" selection-start-line="441" selection-start-column="47" selection-end-line="441" selection-end-column="47" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/core/basic_explore_team_visual/explore_team_visual.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="374">
@@ -575,13 +620,6 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/core/teamwork/test.py" />
-    <entry file="file://$PROJECT_DIR$/externals/psychsim/pwl.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="367">
-          <caret line="101" column="8" selection-start-line="101" selection-start-column="8" selection-end-line="101" selection-end-column="8" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/externals/psychsim/examples/robot.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="222">
@@ -635,14 +673,48 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/externals/psychsim/action.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-36">
+          <folding>
+            <element signature="e#0#16#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/externals/psychsim/world.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="240">
+          <caret line="575" column="81" selection-start-line="575" selection-start-column="81" selection-end-line="575" selection-end-column="81" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/externals/psychsim/pwl.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="240">
+          <caret line="746" column="14" selection-start-line="746" selection-start-column="4" selection-end-line="746" selection-end-column="14" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/externals/psychsim/agent.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="76">
+          <caret line="4" column="34" selection-start-line="4" selection-start-column="34" selection-end-line="4" selection-end-column="34" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/externals/psychsim/reward.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
     <entry file="file://$PROJECT_DIR$/core/teamwork/teamwork.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="405">
-          <caret line="737" column="91" lean-forward="true" selection-start-line="728" selection-start-column="8" selection-end-line="737" selection-end-column="91" />
+        <state relative-caret-position="-6897">
+          <caret line="668" column="77" selection-start-line="668" selection-start-column="77" selection-end-line="668" selection-end-column="77" />
           <folding>
             <element signature="e#347#394#0" expanded="true" />
             <element signature="e#4927#7210#0" />
             <element signature="e#13227#14926#0" />
+            <element signature="e#14979#18699#0" />
           </folding>
         </state>
       </provider>

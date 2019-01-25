@@ -218,22 +218,28 @@ class Scenario:
                             self.AGENT[0])
 
             # Negative reward for going towards enemy
-            enemy = 'Enemy' + str(index)
-            actor.setReward(minimizeDifference(stateKey(actor.name, 'x'), stateKey(enemy, 'x')), self.AGENT[1])
-            actor.setReward(minimizeDifference(stateKey(actor.name, 'y'), stateKey(enemy, 'y')), self.AGENT[1])
+            # enemy = 'Enemy' + str(index)
+            # actor.setReward(minimizeDifference(stateKey(actor.name, 'x'), stateKey(enemy, 'x')), self.AGENT[1])
+            # actor.setReward(minimizeDifference(stateKey(actor.name, 'y'), stateKey(enemy, 'y')), self.AGENT[1])
+
+            # Reward for attacking enemy
+            for index in range(0, self.E_ACTORS):
+                enemy = 'Enemy' + str(index)
+                actor.setReward(minimizeFeature(stateKey(enemy, 'health')), self.AGENT[0])
+            # actor.setReward(minimizeDifference(stateKey(actor.name, 'y'), stateKey(enemy, 'y')), self.AGENT[1])
 
             self.set_friendly_actions(actor)
 
             # Terminate if agent reaches goal
             tree = makeTree({'if': equalFeatureRow(stateKey(actor.name, 'x'), stateKey(actor.name, 'goal_x')),
                              True: {'if': equalFeatureRow(stateKey(actor.name, 'y'), stateKey(actor.name, 'goal_y')),
-                                    True: True,
+                                    True: {'if': equalFeatureRow(stateKey('Enemy'+str(index), 'health'), '0'),
+                    True: True, False: False},
                                     False: False},
                              False: False})
             self.world.addTermination(tree)
-            tree = {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
-                    True: True, False: False}
-            self.world.addTermination(tree)
+
+
 
     def set_friendly_actions(self, actor):
         # Nop
@@ -315,7 +321,7 @@ class Scenario:
         tree = makeTree(incrementMatrix('turns', 1.0))
         self.world.setDynamics(stateKey(None, 'turns'), action, tree)
         for index2 in range(0, self.E_ACTORS):
-            tree = makeTree({'if': equalFeatureRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x')),
+            tree = makeTree({'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x'), 3),
                     True: {'if': equalFeatureRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y')),
                            True: incrementMatrix('health', -1.0), False: incrementMatrix('health', 0.0)},
                     False: incrementMatrix('health', 0.0)})
@@ -329,7 +335,7 @@ class Scenario:
         tree = makeTree(incrementMatrix('turns', 1.0))
         self.world.setDynamics(stateKey(None, 'turns'), action, tree)
         for index2 in range(0, self.E_ACTORS):
-            tree = makeTree({'if': equalFeatureRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x') + 3),
+            tree = makeTree({'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x'), 3),
                     True: {'if': equalFeatureRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y')),
                            True: incrementMatrix('health', -1.0), False: incrementMatrix('health', 0.0)},
                     False: incrementMatrix('health', 0.0)})
@@ -344,7 +350,7 @@ class Scenario:
         self.world.setDynamics(stateKey(None, 'turns'), action, tree)
         for index2 in range(0, self.E_ACTORS):
             tree = makeTree({'if': equalFeatureRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x')),
-                    True: {'if': equalFeatureRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y') - 3),
+                    True: {'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y'),3),
                            True: incrementMatrix('health', -1.0), False: incrementMatrix('health', 0.0)},
                     False: incrementMatrix('health', 0.0)})
             self.world.setDynamics(stateKey('Actor' + str(index2), 'health'), action, tree)
@@ -359,7 +365,7 @@ class Scenario:
         for index2 in range(0, self.E_ACTORS):
             tree = makeTree({'if': equalFeatureRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x')),
                     True: {
-                        'if': equalFeatureRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y') + 3),
+                        'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y'), 3),
                         True: incrementMatrix('health', -1.0), False: incrementMatrix('health', 0.0)},
                     False: incrementMatrix('health', 0.0)})
             self.world.setDynamics(stateKey('Actor' + str(index2), 'health'), action, tree)
@@ -651,13 +657,17 @@ class Scenario:
 
             # actor.setReward(minimizeDifference(stateKey(enemy, 'x'), stateKey(enemy, 'goal_x')), self.ENEMY[2])
             # actor.setReward(minimizeDifference(stateKey(enemy, 'y'), stateKey(enemy, 'goal_y')), self.ENEMY[2])
+            # Reward for attacking enemy
+            for index in range(0, self.F_ACTORS):
+                enemy = 'Actor' + str(index)
+                actor.setReward(minimizeFeature(stateKey(enemy, 'health')), self.ENEMY[0])
 
             self.set_enemy_actions(actor, index)
 
             # Terminate enemy agent if health is 0
 
-            tree = {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
-                    True: True, False: False}
+            tree = makeTree({'if': equalFeatureRow(stateKey('Actor'+str(index), 'health'), '0'),
+                    True: True, False: False})
             self.world.addTermination(tree)
 
     def set_enemy_actions(self, actor, index):
@@ -731,7 +741,7 @@ class Scenario:
         tree = makeTree(incrementMatrix('turns', 1.0))
         self.world.setDynamics(stateKey(None, 'turns'), action, tree)
         for index2 in range(0, self.F_ACTORS):
-            tree = makeTree({'if': equalFeatureRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x')-3),
+            tree = makeTree({'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x'),3),
                     True: {'if': equalFeatureRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y')),
                            True: incrementMatrix('health', -1.0), False: incrementMatrix('health', 0.0)},
                     False: incrementMatrix('health', 0.0)})
@@ -745,7 +755,7 @@ class Scenario:
         tree = makeTree(incrementMatrix('turns', 1.0))
         self.world.setDynamics(stateKey(None, 'turns'), action, tree)
         for index2 in range(0, self.F_ACTORS):
-            tree = makeTree({'if': equalFeatureRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x') + 3),
+            tree = makeTree({'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x'), 3),
                     True: {'if': equalFeatureRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y')),
                            True: incrementMatrix('health', -1.0), False: incrementMatrix('health', 0.0)},
                     False: incrementMatrix('health', 0.0)})
@@ -760,7 +770,7 @@ class Scenario:
         self.world.setDynamics(stateKey(None, 'turns'), action, tree)
         for index2 in range(0, self.F_ACTORS):
             tree = makeTree({'if': equalFeatureRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x')),
-                    True: {'if': equalFeatureRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y') - 3),
+                    True: {'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y'), 3),
                            True: incrementMatrix('health', -1.0), False: incrementMatrix('health', 0.0)},
                     False: incrementMatrix('health', 0.0)})
             self.world.setDynamics(stateKey('Actor' + str(index2), 'health'), action, tree)
@@ -775,7 +785,7 @@ class Scenario:
         for index2 in range(0, self.F_ACTORS):
             tree = makeTree({'if': equalFeatureRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x')),
                     True: {
-                        'if': equalFeatureRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y') + 3),
+                        'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y'), 3),
                         True: incrementMatrix('health', -1.0), False: incrementMatrix('health', 0.0)},
                     False: incrementMatrix('health', 0.0)})
             self.world.setDynamics(stateKey('Actor' + str(index2), 'health'), action, tree)
@@ -1040,7 +1050,7 @@ def run(genome):
         F_GOAL_LOC=["5,5"],
         F_ENERGY=[10.0],
         E_ACTORS=1,
-        E_START_LOC=["6,6"],
+        E_START_LOC=["5,4"],
         E_PATROL_RANGE=5,
         # D_ACTORS=1,
         # D_START_LOC=["2,3"],
