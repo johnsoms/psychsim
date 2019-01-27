@@ -755,7 +755,7 @@ class Scenario:
         tree = makeTree(incrementMatrix('turns', 1.0))
         self.world.setDynamics(stateKey(None, 'turns'), action, tree)
         for index2 in range(0, self.F_ACTORS):
-            tree = makeTree({'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x'), 3),
+            tree = makeTree({'if': differenceRow(stateKey('Actor' + str(index2), 'x'), stateKey(actor.name, 'x'), 3),
                     True: {'if': equalFeatureRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y')),
                            True: incrementMatrix('health', -1.0), False: incrementMatrix('health', 0.0)},
                     False: incrementMatrix('health', 0.0)})
@@ -785,7 +785,7 @@ class Scenario:
         for index2 in range(0, self.F_ACTORS):
             tree = makeTree({'if': equalFeatureRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x')),
                     True: {
-                        'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y'), 3),
+                        'if': differenceRow(stateKey('Actor' + str(index2), 'y'), stateKey(actor.name, 'y'), 3),
                         True: incrementMatrix('health', -1.0), False: incrementMatrix('health', 0.0)},
                     False: incrementMatrix('health', 0.0)})
             self.world.setDynamics(stateKey('Actor' + str(index2), 'health'), action, tree)
