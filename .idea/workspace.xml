@@ -2,206 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="e5e2ba2b-8b34-4046-bf88-129808d2f254" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/LICENSE.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/__main__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/action.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/agent.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/core/teamwork/teamwork.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/teamwork/teamwork.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/LaTeX/manual.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/LaTeX/manual.tex" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/PyQt4.QtGui.QGraphicsItem.CacheMode-class.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/PyQt4.QtGui.QGraphicsItem.GraphicsItemChange-class.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/PyQt4.QtGui.QGraphicsItem.GraphicsItemFlag-class.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/PyQt4.QtGui.QGraphicsItem.GraphicsItemFlags-class.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/PyQt4.QtGui.QGraphicsItem.PanelModality-class.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/PyQt4.QtGui.QGraphicsScene.ItemIndexMethod-class.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/PyQt4.QtGui.QGraphicsScene.SceneLayer-class.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/PyQt4.QtGui.QGraphicsScene.SceneLayers-class.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/PyQt4.QtGui.QMainWindow.DockOption-class.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/PyQt4.QtGui.QMainWindow.DockOptions-class.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/PyQt4.QtGui.QPaintDevice.PaintDeviceMetric-class.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/PyQt4.QtGui.QWidget.RenderFlag-class.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/PyQt4.QtGui.QWidget.RenderFlags-class.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/api-objects.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/class-tree.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/crarr.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/epydoc.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/epydoc.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/frames.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/help.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/identifier-index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/module-tree.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/psychsim-module.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/psychsim-pysrc.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/psychsim.action-module.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/psychsim.action-pysrc.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/psychsim.action.Action-class.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/psychsim.action.ActionSet-class.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/psychsim.agent-module.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/psychsim.agent-pysrc.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/psychsim.agent.Agent-class.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/psychsim.agent.ValueFunction-class.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/psychsim.cfg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/psychsim.examples-module.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/psychsim.examples-pysrc.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/psychsim.examples.Fire-module.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/psychsim.examples.Fire-pysrc.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/psychsim.examples.anthrax-module.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/psychsim.examples.anthrax-pysrc.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/psychsim.examples.freedonia-module.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/psychsim.examples.freedonia-pysrc.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/psychsim.examples.teamofrivals-module.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/psychsim.examples.teamofrivals-pysrc.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/psychsim.examples.teamofrivals.ResourceAgent-class.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/psychsim.examples.teamofrivals.ResourceWorld-class.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/psychsim.probability-module.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/psychsim.probability-pysrc.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/psychsim.probability.Distribution-class.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/psychsim.pwl-module.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/psychsim.pwl-pysrc.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/psychsim.pwl.KeyedBranch-class.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/psychsim.pwl.KeyedMatrix-class.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/psychsim.pwl.KeyedPlane-class.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/psychsim.pwl.KeyedTree-class.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/psychsim.pwl.KeyedVector-class.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/psychsim.pwl.MatrixDistribution-class.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/psychsim.pwl.TreeDistribution-class.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/psychsim.pwl.VectorDistribution-class.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/psychsim.reward-module.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/psychsim.reward-pysrc.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/psychsim.shell-module.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/psychsim.shell-pysrc.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/psychsim.tools-module.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/psychsim.tools-pysrc.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/psychsim.tools.gdelt-module.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/psychsim.tools.gdelt-pysrc.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/psychsim.ui-module.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/psychsim.ui-pysrc.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/psychsim.ui.PsychSimUI-class.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/psychsim.ui.mainwindow-module.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/psychsim.ui.mainwindow-pysrc.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/psychsim.ui.mainwindow.Ui_MainWindow-class.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/psychsim.ui.worldview-module.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/psychsim.ui.worldview-pysrc.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/psychsim.ui.worldview.ActionNode-class.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/psychsim.ui.worldview.UtilityNode-class.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/psychsim.ui.worldview.VariableNode-class.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/psychsim.ui.worldview.WorldView-class.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/psychsim.world-module.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/psychsim.world-pysrc.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/psychsim.world.World-class.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/redirect.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/toc-everything.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/toc-psychsim-module.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/toc-psychsim.action-module.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/toc-psychsim.agent-module.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/toc-psychsim.examples-module.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/toc-psychsim.examples.Fire-module.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/toc-psychsim.examples.anthrax-module.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/toc-psychsim.examples.freedonia-module.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/toc-psychsim.examples.teamofrivals-module.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/toc-psychsim.probability-module.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/toc-psychsim.pwl-module.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/toc-psychsim.reward-module.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/toc-psychsim.shell-module.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/toc-psychsim.tools-module.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/toc-psychsim.tools.gdelt-module.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/toc-psychsim.ui-module.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/toc-psychsim.ui.mainwindow-module.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/toc-psychsim.ui.worldview-module.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/toc-psychsim.world-module.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/toc.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/uml_class_diagram_for_psychsim.gif" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/uml_class_diagram_for_psychsim_10.gif" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/uml_class_diagram_for_psychsim_11.gif" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/uml_class_diagram_for_psychsim_12.gif" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/uml_class_diagram_for_psychsim_13.gif" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/uml_class_diagram_for_psychsim_14.gif" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/uml_class_diagram_for_psychsim_15.gif" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/uml_class_diagram_for_psychsim_16.gif" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/uml_class_diagram_for_psychsim_17.gif" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/uml_class_diagram_for_psychsim_18.gif" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/uml_class_diagram_for_psychsim_2.gif" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/uml_class_diagram_for_psychsim_3.gif" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/uml_class_diagram_for_psychsim_4.gif" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/uml_class_diagram_for_psychsim_5.gif" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/uml_class_diagram_for_psychsim_6.gif" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/uml_class_diagram_for_psychsim_7.gif" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/uml_class_diagram_for_psychsim_8.gif" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/uml_class_diagram_for_psychsim_9.gif" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/uml_class_diagram_for_pyqt4_qt.gif" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/uml_class_diagram_for_pyqt4_qt_10.gif" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/uml_class_diagram_for_pyqt4_qt_11.gif" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/uml_class_diagram_for_pyqt4_qt_12.gif" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/uml_class_diagram_for_pyqt4_qt_13.gif" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/uml_class_diagram_for_pyqt4_qt_2.gif" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/uml_class_diagram_for_pyqt4_qt_3.gif" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/uml_class_diagram_for_pyqt4_qt_4.gif" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/uml_class_diagram_for_pyqt4_qt_5.gif" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/uml_class_diagram_for_pyqt4_qt_6.gif" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/uml_class_diagram_for_pyqt4_qt_7.gif" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/uml_class_diagram_for_pyqt4_qt_8.gif" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/uml_class_diagram_for_pyqt4_qt_9.gif" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/domains/disaster/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/domains/disaster/anthrax.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/domains/evacuation/Fire.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/domains/gameTheory/justcentipede.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/domains/gameTheory/ultimatum.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/domains/hri/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/domains/hri/robot.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/domains/hri/robotWaypoints.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/domains/hri/wp.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/domains/negotiation/Full_Ntest.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/domains/negotiation/Negotiation_full.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/domains/negotiation/Negotiation_legal.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/domains/negotiation/Negotiation_loops.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/domains/negotiation/Negotiation_rounds.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/domains/teamofrivals/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/domains/teamofrivals/asia.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/domains/teamofrivals/getLog.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/domains/teamofrivals/newmap.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/domains/teamofrivals/risk.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/domains/teamofrivals/teamofrivals.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/domains/teamofrivals/torAnalysis.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/domains/teamwork/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/domains/teamwork/loader.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/domains/teamwork/resources/base.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/domains/teamwork/resources/grass.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/domains/teamwork/resources/grass_noborder.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/domains/teamwork/resources/heli.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/domains/teamwork/resources/soldier_blue.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/domains/teamwork/resources/soldier_red.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/domains/teamwork/resources/target.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/domains/teamwork/resources/target_old.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/domains/teamwork/teamwork.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/domains/wartime/freedonia.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/domains/wartime/index.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/externals/psychsim/pwl.py" beforeDir="false" afterPath="$PROJECT_DIR$/externals/psychsim/pwl.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/graph.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/probability.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pwl/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pwl/matrix.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pwl/plane.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pwl/tree.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pwl/vector.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/reward.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/shell.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/testPWL.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/tomjerry.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tools/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tools/gdelt.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tools/graph.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/diagram.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/mainwindow.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/mainwindow.ui" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/psychsim.gif" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/psychsim.qrc" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/psychsim_rc.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/worldview.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/world.py" beforeDir="false" />
     </list>
     <ignored path="Tutoring-for-Team-Training.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -233,10 +35,22 @@
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/core/teamwork/teamwork.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="410">
+              <caret line="646" column="55" selection-start-line="646" selection-start-column="55" selection-end-line="646" selection-end-column="55" />
+              <folding>
+                <element signature="e#346#393#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/externals/psychsim/pwl.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="240">
-              <caret line="753" column="15" selection-start-line="753" selection-start-column="4" selection-end-line="753" selection-end-column="15" />
+              <caret line="792" column="12" selection-start-line="792" selection-start-column="4" selection-end-line="792" selection-end-column="12" />
             </state>
           </provider>
         </entry>
@@ -263,9 +77,14 @@
       <find>KeyedVector</find>
       <find>KeyedPlane</find>
       <find>difference</find>
-      <find>print</find>
       <find>equal</find>
       <find>differenceD</find>
+      <find>print</find>
+      <find>evaluate_score</find>
+      <find>increment</find>
+      <find>incrementMA</find>
+      <find>equalFea</find>
+      <find>create_enemy_agents</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -832,23 +651,20 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/core/teamwork/teamwork.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1401">
-          <caret line="33" column="31" lean-forward="true" selection-start-line="33" selection-start-column="31" selection-end-line="33" selection-end-column="31" />
-          <folding>
-            <element signature="e#347#394#0" expanded="true" />
-            <element signature="e#4927#7210#0" />
-            <element signature="e#13227#14926#0" />
-            <element signature="e#14979#18699#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/externals/psychsim/pwl.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="240">
-          <caret line="753" column="15" selection-start-line="753" selection-start-column="4" selection-end-line="753" selection-end-column="15" />
+          <caret line="792" column="12" selection-start-line="792" selection-start-column="4" selection-end-line="792" selection-end-column="12" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/core/teamwork/teamwork.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="410">
+          <caret line="646" column="55" selection-start-line="646" selection-start-column="55" selection-end-line="646" selection-end-column="55" />
+          <folding>
+            <element signature="e#346#393#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
