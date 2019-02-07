@@ -62,7 +62,7 @@ class Scenario:
         self.world = World()
         self.world.defineState(None, 'turns', int)
         self.world.setState(None, 'turns', 0)
-        self.world.addTermination(makeTree({'if': thresholdRow(stateKey(None, 'turns'), 20),
+        self.world.addTermination(makeTree({'if': thresholdRow(stateKey(None, 'turns'), 40),
                                             True: True, False: False}))
 
         self.create_friendly_agents()
@@ -218,9 +218,9 @@ class Scenario:
                             self.AGENT[0])
             actor.setReward(maximizeFeature(stateKey(actor.name, 'health')), self.AGENT[1])
             # Negative reward for going towards enemy
-            # enemy = 'Enemy' + str(index)
-            # actor.setReward(minimizeDifference(stateKey(actor.name, 'x'), stateKey(enemy, 'x')), self.AGENT[1])
-            # actor.setReward(minimizeDifference(stateKey(actor.name, 'y'), stateKey(enemy, 'y')), self.AGENT[1])
+            enemy = 'Enemy' + str(index)
+            actor.setReward(minimizeDifference(stateKey(actor.name, 'x'), stateKey(enemy, 'x')), self.AGENT[1])
+            actor.setReward(minimizeDifference(stateKey(actor.name, 'y'), stateKey(enemy, 'y')), self.AGENT[1])
 
             # Reward for attacking enemy
             for index in range(0, self.E_ACTORS):
@@ -262,8 +262,16 @@ class Scenario:
         # self.world.setDynamics(stateKey(action['subject'], 'energy'), action, tree)
 
         # Rightmost boundary check
+        index2 = 0 #Only have one enemy agent right now
         tree = makeTree({'if': equalRow(stateKey(actor.name, 'x'), str(self.MAP_SIZE_X)),
-                         True: False, False: True})
+                         True: False,
+                         False: {'if':differenceRow(stateKey(actor.name, 'x'),stateKey('Enemy' + str(index2), 'x'), 0),
+                                 True: {'if': differenceRow(stateKey(actor.name, 'x'),stateKey('Enemy' + str(index2), 'x'), 1),
+                                        True: True,
+                                        False: {'if': equalFeatureRow(stateKey('Enemy' + str(index2), 'health'), '0'),
+                                            True: True,
+                                            False: False}},
+                                False: True}})
         actor.setLegal(action, tree)
 
         ##############################
@@ -321,9 +329,14 @@ class Scenario:
         tree = makeTree(incrementMatrix('turns', 1.0))
         self.world.setDynamics(stateKey(None, 'turns'), action, tree)
         for index2 in range(0, self.E_ACTORS):
-            tree = makeTree({'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Enemy' + str(index2), 'x'), 3),
-                    True: {'if': equalFeatureRow(stateKey(actor.name, 'y'), stateKey('Enemy' + str(index2), 'y')),
-                           True: incrementMatrix(stateKey('Enemy' + str(index2),'health'), 0.0), False: incrementMatrix(stateKey('Enemy' + str(index2),'health'), -1.0)},
+            tree = makeTree({'if': equalFeatureRow(stateKey(actor.name, 'y'), stateKey('Enemy' + str(index2), 'y')),
+                    True: {'if': differenceRow(stateKey(actor.name, 'x'),stateKey('Enemy' + str(index2), 'x'),-3),
+	                    True: {'if': differenceRow(stateKey(actor.name, 'x'),stateKey('Enemy' + str(index2), 'x'),0),
+		                    True: incrementMatrix(stateKey('Enemy' + str(index2),'health'), 0.0),
+		                    False: {'if':equalFeatureRow(stateKey('Enemy' + str(index2), 'health'), '0'),
+                                    True: incrementMatrix(stateKey('Enemy' + str(index2),'health'), 0.0),
+                                    False: incrementMatrix(stateKey('Enemy' + str(index2),'health'), -1.0)}},
+	                    False: incrementMatrix(stateKey('Enemy' + str(index2),'health'), 0.0)},
                     False: incrementMatrix(stateKey('Enemy' + str(index2),'health'), 0.0)})
             self.world.setDynamics(stateKey('Enemy' + str(index2), 'health'), action, tree)
         actor.setLegal(action, makeTree({'if': equalRow(stateKey(actor.name, 'y'), '0'), True:True, False:True}))
@@ -335,9 +348,14 @@ class Scenario:
         tree = makeTree(incrementMatrix('turns', 1.0))
         self.world.setDynamics(stateKey(None, 'turns'), action, tree)
         for index2 in range(0, self.E_ACTORS):
-            tree = makeTree({'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Enemy' + str(index2), 'x'), 3),
-                    True: {'if': equalFeatureRow(stateKey(actor.name, 'y'), stateKey('Enemy' + str(index2), 'y')),
-                           True: incrementMatrix(stateKey('Enemy' + str(index2),'health'), 0.0), False: incrementMatrix(stateKey('Enemy' + str(index2),'health'), -1.0)},
+            tree = makeTree({'if': equalFeatureRow(stateKey(actor.name, 'y'), stateKey('Enemy' + str(index2), 'y')),
+                    True: {'if': differenceRow(stateKey(actor.name, 'x'),stateKey('Enemy' + str(index2), 'x'), 0),
+	                    True: {'if': differenceRow(stateKey(actor.name, 'x'),stateKey('Enemy' + str(index2), 'x'),3),
+		                    True: incrementMatrix(stateKey('Enemy' + str(index2),'health'), 0.0),
+		                    False: {'if':equalFeatureRow(stateKey('Enemy' + str(index2), 'health'), '0'),
+                                    True: incrementMatrix(stateKey('Enemy' + str(index2),'health'), 0.0),
+                                    False: incrementMatrix(stateKey('Enemy' + str(index2),'health'), -1.0)}},
+	                    False: incrementMatrix(stateKey('Enemy' + str(index2),'health'), 0.0)},
                     False: incrementMatrix(stateKey('Enemy' + str(index2),'health'), 0.0)})
             self.world.setDynamics(stateKey('Enemy' + str(index2), 'health'), action, tree)
         actor.setLegal(action, makeTree({'if': equalRow(stateKey(actor.name, 'y'), '0'), True:True, False:True}))
@@ -350,8 +368,13 @@ class Scenario:
         self.world.setDynamics(stateKey(None, 'turns'), action, tree)
         for index2 in range(0, self.E_ACTORS):
             tree = makeTree({'if': equalFeatureRow(stateKey(actor.name, 'x'), stateKey('Enemy' + str(index2), 'x')),
-                    True: {'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Enemy' + str(index2), 'y'),3),
-                           True: incrementMatrix(stateKey('Enemy' + str(index2),'health'), 0.0), False: incrementMatrix(stateKey('Enemy' + str(index2),'health'), -1.0)},
+                    True: {'if': differenceRow(stateKey(actor.name, 'y'),stateKey('Enemy' + str(index2), 'y'),-3),
+	                    True: {'if': differenceRow(stateKey(actor.name, 'y'),stateKey('Enemy' + str(index2), 'y'),0),
+		                    True: incrementMatrix(stateKey('Enemy' + str(index2),'health'), 0.0),
+		                    False: {'if':equalFeatureRow(stateKey('Enemy' + str(index2), 'health'), '0'),
+                                    True: incrementMatrix(stateKey('Enemy' + str(index2),'health'), 0.0),
+                                    False: incrementMatrix(stateKey('Enemy' + str(index2),'health'), -1.0)}},
+	                    False: incrementMatrix(stateKey('Enemy' + str(index2),'health'), 0.0)},
                     False: incrementMatrix(stateKey('Enemy' + str(index2),'health'), 0.0)})
             self.world.setDynamics(stateKey('Enemy' + str(index2), 'health'), action, tree)
         actor.setLegal(action, makeTree({'if': equalRow(stateKey(actor.name, 'y'), '0'), True:True, False:True}))
@@ -364,9 +387,13 @@ class Scenario:
         self.world.setDynamics(stateKey(None, 'turns'), action, tree)
         for index2 in range(0, self.E_ACTORS):
             tree = makeTree({'if': equalFeatureRow(stateKey(actor.name, 'x'), stateKey('Enemy' + str(index2), 'x')),
-                    True: {
-                        'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Enemy' + str(index2), 'y'), 3),
-                        True: incrementMatrix(stateKey('Enemy' + str(index2),'health'), 0.0), False: incrementMatrix(stateKey('Enemy' + str(index2),'health'), -1.0)},
+                    True: {'if': differenceRow(stateKey(actor.name, 'y'),stateKey('Enemy' + str(index2), 'y'),0),
+	                    True: {'if': differenceRow(stateKey(actor.name, 'y'),stateKey('Enemy' + str(index2), 'y'),3),
+		                    True: incrementMatrix(stateKey('Enemy' + str(index2),'health'), 0.0),
+		                    False: {'if':equalFeatureRow(stateKey('Enemy' + str(index2), 'health'), '0'),
+                                    True: incrementMatrix(stateKey('Enemy' + str(index2),'health'), 0.0),
+                                    False: incrementMatrix(stateKey('Enemy' + str(index2),'health'), -1.0)}},
+	                    False: incrementMatrix(stateKey('Enemy' + str(index2),'health'), 0.0)},
                     False: incrementMatrix(stateKey('Enemy' + str(index2),'health'), 0.0)})
             self.world.setDynamics(stateKey('Enemy' + str(index2), 'health'), action, tree)
         actor.setLegal(action, makeTree({'if': equalRow(stateKey(actor.name, 'y'), '0'), True:True, False:True}))
@@ -746,7 +773,9 @@ class Scenario:
                            True: incrementMatrix(stateKey('Actor' + str(index2),'health'), -1), False: incrementMatrix(stateKey('Actor' + str(index2),'health'), 0)},
                     False: incrementMatrix(stateKey('Actor' + str(index2),'health'), 0)})
             self.world.setDynamics(stateKey('Actor' + str(index2), 'health'), action, tree)
-        actor.setLegal(action, makeTree({'if': equalRow(stateKey(actor.name, 'y'), '0'), True:True, False:True}))
+        actor.setLegal(action, makeTree({'if': differenceRow(stateKey(actor.name, 'health'), '0', '1'),
+                                         True: True,
+                                         False:False}))
 
         ##############################
 
@@ -760,7 +789,9 @@ class Scenario:
                            True: incrementMatrix(stateKey('Actor' + str(index2),'health'), -1), False: incrementMatrix(stateKey('Actor' + str(index2),'health'), 0)},
                     False: incrementMatrix(stateKey('Actor' + str(index2),'health'), 0)})
             self.world.setDynamics(stateKey('Actor' + str(index2), 'health'), action, tree)
-        actor.setLegal(action, makeTree({'if': equalRow(stateKey(actor.name, 'y'), '0'), True:True, False:True}))
+        actor.setLegal(action, makeTree({'if': differenceRow(stateKey(actor.name, 'health'), '0', '1'),
+                                         True: True,
+                                         False: False}))
 
         ##############################
 
@@ -774,7 +805,9 @@ class Scenario:
                            True: incrementMatrix(stateKey('Actor' + str(index2),'health'), 0), False: incrementMatrix(stateKey('Actor' + str(index2),'health'), -1)},
                     False: incrementMatrix(stateKey('Actor' + str(index2),'health'), 0)})
             self.world.setDynamics(stateKey('Actor' + str(index2), 'health'), action, tree)
-        actor.setLegal(action, makeTree({'if': equalRow(stateKey(actor.name, 'y'), '0'), True:True, False:True}))
+        actor.setLegal(action, makeTree({'if': differenceRow(stateKey(actor.name, 'health'), '0', '1'),
+                                         True: True,
+                                         False: False}))
 
         ##############################
 
@@ -789,7 +822,9 @@ class Scenario:
                         True: incrementMatrix(stateKey('Actor' + str(index2),'health'), 0), False: incrementMatrix(stateKey('Actor' + str(index2),'health'), -1)},
                     False: incrementMatrix(stateKey('Actor' + str(index2),'health'), 0)})
             self.world.setDynamics(stateKey('Actor' + str(index2), 'health'), action, tree)
-        actor.setLegal(action, makeTree({'if': equalRow(stateKey(actor.name, 'y'), '0'), True:True, False:True}))
+        actor.setLegal(action, makeTree({'if': differenceRow(stateKey(actor.name, 'health'), '0', '1'),
+                                         True: True,
+                                         False: False}))
     # Obsolete
     def evaluate_score(self):
         cwd = os.getcwd()

@@ -37,8 +37,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/core/teamwork/teamwork.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="410">
-              <caret line="646" column="55" selection-start-line="646" selection-start-column="55" selection-end-line="646" selection-end-column="55" />
+            <state relative-caret-position="14311">
+              <caret line="994" column="36" selection-start-line="994" selection-start-column="23" selection-end-line="994" selection-end-column="36" />
               <folding>
                 <element signature="e#346#393#0" expanded="true" />
               </folding>
@@ -49,8 +49,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/externals/psychsim/pwl.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="240">
-              <caret line="792" column="12" selection-start-line="792" selection-start-column="4" selection-end-line="792" selection-end-column="12" />
+            <state relative-caret-position="14231">
+              <caret line="753" column="14" selection-start-line="753" selection-start-column="4" selection-end-line="753" selection-end-column="14" />
             </state>
           </provider>
         </entry>
@@ -76,7 +76,6 @@
       <find>score</find>
       <find>KeyedVector</find>
       <find>KeyedPlane</find>
-      <find>difference</find>
       <find>equal</find>
       <find>differenceD</find>
       <find>print</find>
@@ -85,6 +84,15 @@
       <find>incrementMA</find>
       <find>equalFea</find>
       <find>create_enemy_agents</find>
+      <find>create_friendly_agents</find>
+      <find>differenceDire</find>
+      <find>difference</find>
+      <find>turns</find>
+      <find>health</find>
+      <find>enemy</find>
+      <find>e_get_current_x</find>
+      <find>e_get_current_y</find>
+      <find>e_get_start_x</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -117,10 +125,8 @@
     <sorting>DEFINITION_ORDER</sorting>
   </component>
   <component name="ProjectFrameBounds" fullScreen="true">
-    <option name="x" value="-8" />
-    <option name="y" value="-8" />
-    <option name="width" value="1936" />
-    <option name="height" value="1176" />
+    <option name="width" value="1440" />
+    <option name="height" value="900" />
   </component>
   <component name="ProjectView">
     <navigator proportions="" version="1">
@@ -651,20 +657,20 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/externals/psychsim/pwl.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="240">
-          <caret line="792" column="12" selection-start-line="792" selection-start-column="4" selection-end-line="792" selection-end-column="12" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/core/teamwork/teamwork.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="410">
-          <caret line="646" column="55" selection-start-line="646" selection-start-column="55" selection-end-line="646" selection-end-column="55" />
+        <state relative-caret-position="14311">
+          <caret line="994" column="36" selection-start-line="994" selection-start-column="23" selection-end-line="994" selection-end-column="36" />
           <folding>
             <element signature="e#346#393#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/externals/psychsim/pwl.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="14231">
+          <caret line="753" column="14" selection-start-line="753" selection-start-column="4" selection-end-line="753" selection-end-column="14" />
         </state>
       </provider>
     </entry>
