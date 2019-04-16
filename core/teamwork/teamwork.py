@@ -16,6 +16,8 @@ from pyglet.window import key
 from threading import Thread
 from time import time
 import os
+import random
+import copy
 
 class Scenario:
     def __init__(self,
@@ -65,7 +67,7 @@ class Scenario:
         self.world.addTermination(makeTree({'if': thresholdRow(stateKey(None, 'turns'), 40),
                                             True: True, False: False}))
 
-        self.create_friendly_agents()
+        self.friendly_agents = self.create_friendly_agents()
 
         # self.create_distract_agents()
         # self.create_supply_agents()
@@ -192,6 +194,7 @@ class Scenario:
             base.setReward(minimizeFeature(stateKey('Supplier' + str(index), 'cost')), self.BASE[1])
 
     def create_friendly_agents(self):
+        actors = []
         for index in range(0, self.F_ACTORS):
             actor = Agent('Actor' + str(index))
             self.world.addAgent(actor)
@@ -216,29 +219,34 @@ class Scenario:
                             self.AGENT[0])
             actor.setReward(minimizeDifference(stateKey(actor.name, 'y'), stateKey(actor.name, 'goal_y')),
                             self.AGENT[0])
-            actor.setReward(maximizeFeature(stateKey(actor.name, 'health')), self.AGENT[1])
+            actor.setReward(achieveFeatureValue(stateKey(actor.name, 'health'),'0'), self.AGENT[2])
             # Negative reward for going towards enemy
+            actors.append(actor)
             enemy = 'Enemy' + str(index)
-            actor.setReward(minimizeDifference(stateKey(actor.name, 'x'), stateKey(enemy, 'x')), self.AGENT[1])
-            actor.setReward(minimizeDifference(stateKey(actor.name, 'y'), stateKey(enemy, 'y')), self.AGENT[1])
 
-            # Reward for attacking enemy
-            for index in range(0, self.E_ACTORS):
-                enemy = 'Enemy' + str(index)
-                actor.setReward(minimizeFeature(stateKey(enemy, 'health')), self.AGENT[0])
+
+
+                # actor.setReward(minimizeDifference(stateKey(actor.name, 'x'), stateKey(enemy, 'x')), self.AGENT[1])
+                # actor.setReward(minimizeDifference(stateKey(actor.name, 'y'), stateKey(enemy, 'y')), self.AGENT[1])
             # actor.setReward(minimizeDifference(stateKey(actor.name, 'y'), stateKey(enemy, 'y')), self.AGENT[1])
-            self.create_enemy_agents()
+        self.create_enemy_agents()
+        for index in range(0, self.F_ACTORS):
+            actor = actors[index]
+            # Reward for attacking enemy
+            for index2 in range(0, self.E_ACTORS):
+                enemy = 'Enemy' + str(index2)
+                actor.setReward(minimizeFeature(stateKey(enemy, 'health')), self.AGENT[1])
             self.set_friendly_actions(actor)
 
             # Terminate if agent reaches goal
             tree = makeTree({'if': equalFeatureRow(stateKey(actor.name, 'x'), stateKey(actor.name, 'goal_x')),
                              True: {'if': equalFeatureRow(stateKey(actor.name, 'y'), stateKey(actor.name, 'goal_y')),
-                                    True: {'if': equalFeatureRow(stateKey('Enemy'+str(index), 'health'), '0'),
-                    True: True, False: False},
+                                    True: True,
                                     False: False},
                              False: False})
             self.world.addTermination(tree)
 
+        return actors
 
 
     def set_friendly_actions(self, actor):
@@ -252,6 +260,7 @@ class Scenario:
         self.world.setDynamics(stateKey(None, 'turns'), action, tree)
         # tree = makeTree(incrementMatrix(stateKey(action['subject'], 'energy'), 0.0))
         # self.world.setDynamics(stateKey(action['subject'], 'energy'), action, tree)
+
         # Increment X position
         action = actor.addAction({'verb': 'MoveRight'})
         tree = makeTree(incrementMatrix(stateKey(action['subject'], 'x'), 1.))
@@ -262,16 +271,96 @@ class Scenario:
         # self.world.setDynamics(stateKey(action['subject'], 'energy'), action, tree)
 
         # Rightmost boundary check
-        index2 = 0 #Only have one enemy agent right now
-        tree = makeTree({'if': equalRow(stateKey(actor.name, 'x'), str(self.MAP_SIZE_X)),
+        dict = {}
+
+        edl = []
+        for index2 in range(self.E_ACTORS):
+            if not dict:
+                dict.update({'if': equalRow(stateKey(actor.name, 'x'), str(self.MAP_SIZE_X)),
                          True: False,
-                         False: {'if':differenceRow(stateKey(actor.name, 'x'),stateKey('Enemy' + str(index2), 'x'), 0),
-                                 True: {'if': differenceRow(stateKey(actor.name, 'x'),stateKey('Enemy' + str(index2), 'x'), 1),
-                                        True: True,
-                                        False: {'if': equalFeatureRow(stateKey('Enemy' + str(index2), 'health'), '0'),
-                                            True: True,
-                                            False: False}},
-                                False: True}})
+                         False: {'if':differenceRow(stateKey(actor.name, 'x'),stateKey('Enemy' + str(index2), 'x'), -1),
+                                 True: {'if': differenceRow(stateKey(actor.name, 'x'),stateKey('Enemy' + str(index2), 'x'), 0),
+                                        True: {},
+                                        False: {'if': equalFeatureRow(stateKey(actor.name, 'y'),stateKey('Enemy' + str(index2), 'y')),
+                                                True: {'if': equalFeatureRow(stateKey('Enemy' + str(index2), 'health'), '0'),
+                                                    True: {},
+                                                    False: False},
+                                                False:{}}},
+                                 False: {}}})
+            else:
+                newdict = {'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Enemy' + str(index2), 'x'), -1),
+                           True: {
+                               'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Enemy' + str(index2), 'x'), 0),
+                               True: {},
+                               False: {
+                                   'if': equalFeatureRow(stateKey(actor.name, 'y'), stateKey('Enemy' + str(index2), 'y')),
+                                   True: {'if': equalFeatureRow(stateKey('Enemy' + str(index2), 'health'), '0'),
+                                           True: {},
+                                           False: False},
+                                   False: {}}},
+                           False: {}}
+                print("CALLED1A")
+                dict = recursiveFillEmptyDicts(dict, newdict)
+        for index2 in range(self.F_ACTORS):
+            print(index2)
+            print(self.F_ACTORS-1)
+            if 'Actor'+str(index2) == actor.name:
+                continue
+            elif index2 != (self.F_ACTORS-1):
+                if index2+1 == (self.F_ACTORS - 1) and 'Actor' + str(index2+1) == actor.name:
+                    print("END")
+                    newdict = {'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x'), -1),
+                               True: {
+                                   'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x'),
+                                                       0),
+                                   True: True,
+                                   False: {
+                                       'if': equalFeatureRow(stateKey(actor.name, 'y'),
+                                                             stateKey('Actor' + str(index2), 'y')),
+                                       False: True,
+                                       True: {'if': equalFeatureRow(stateKey('Actor' + str(index2), 'health'), '0'),
+                                              True: True,
+                                              False: False}}},
+                               False: True}
+                    print("CALLED3D")
+                    combined_dict = newdict
+                    for dict2 in reversed(edl):
+                        combined_dict = recursiveFillEmptyDicts(dict2, combined_dict)
+                    dict = recursiveFillEmptyDicts(dict, combined_dict)
+                else:
+                    newdict = {'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x'), -1),
+                               True: {
+                                   'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x'), 0),
+                                   True: {},
+                                   False: {
+                                       'if': equalFeatureRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y')),
+                                       True: {'if': equalFeatureRow(stateKey('Actor' + str(index2), 'health'), '0'),
+                                               True: {},
+                                               False: False},
+                                       False: {}}},
+                               False: {}}
+                    print("CALLED2A")
+                    edl.append(newdict)
+            else:
+                print("END")
+                newdict = {'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x'), -1),
+                           True: {
+                               'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x'), 0),
+                               True: True,
+                               False: {
+                                   'if': equalFeatureRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y')),
+                                   True: {'if': equalFeatureRow(stateKey('Actor' + str(index2), 'health'), '0'),
+                                           True: True,
+                                           False: False},
+                                   False: True}},
+                           False: True}
+                print("CALLED3A")
+                combined_dict = newdict
+                for dict2 in reversed(edl):
+                    combined_dict = recursiveFillEmptyDicts(dict2, combined_dict)
+                dict = recursiveFillEmptyDicts(dict, combined_dict)
+                # print(dict)
+        tree = makeTree(dict)
         actor.setLegal(action, tree)
 
         ##############################
@@ -286,8 +375,97 @@ class Scenario:
         # self.world.setDynamics(stateKey(action['subject'], 'energy'), action, tree)
 
         # Leftmost boundary check, min X = 0
-        tree = makeTree({'if': equalRow(stateKey(actor.name, 'x'), '0'),
-                         True: False, False: True})
+        dict = {}
+        edl = []
+        for index2 in range(self.E_ACTORS):
+            if not dict:
+                dict.update({'if': equalRow(stateKey(actor.name, 'x'), 0),
+                             True: False,
+                             False: {
+                                 'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Enemy' + str(index2), 'x'),
+                                                     0),
+                                 True: {'if': differenceRow(stateKey(actor.name, 'x'),
+                                                            stateKey('Enemy' + str(index2), 'x'), 1),
+                                        True: {},
+                                        False: {'if': equalFeatureRow(stateKey(actor.name, 'y'),
+                                                                    stateKey('Enemy' + str(index2), 'y')),
+                                                False: {},
+                                                True: {'if': equalFeatureRow(stateKey('Enemy' + str(index2), 'health'),
+                                                                              '0'),
+                                                        True: {},
+                                                        False: False}}},
+                                 False: {}}})
+            else:
+                newdict = {'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Enemy' + str(index2), 'x'), 0),
+                           True: {
+                               'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Enemy' + str(index2), 'x'), 1),
+                               True: {},
+                               False: {
+                                   'if': equalFeatureRow(stateKey(actor.name, 'y'), stateKey('Enemy' + str(index2), 'y')),
+                                   False: {},
+                                   True: {'if': equalFeatureRow(stateKey('Enemy' + str(index2), 'health'), '0'),
+                                           True: {},
+                                           False: False}}},
+                           False: {}}
+                print("CALLED1B")
+                dict = recursiveFillEmptyDicts(dict, newdict)
+        for index2 in range(self.F_ACTORS):
+            if 'Actor' + str(index2) == actor.name:
+                continue
+            elif index2 != (self.F_ACTORS - 1):
+                if index2+1 == (self.F_ACTORS - 1) and 'Actor' + str(index2+1) == actor.name:
+                    print("END")
+                    newdict = {'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x'), 0),
+                               True: {
+                                   'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x'),
+                                                       1),
+                                   True: True,
+                                   False: {
+                                       'if': equalFeatureRow(stateKey(actor.name, 'y'),
+                                                             stateKey('Actor' + str(index2), 'y')),
+                                       False: True,
+                                       True: {'if': equalFeatureRow(stateKey('Actor' + str(index2), 'health'), '0'),
+                                              True: True,
+                                              False: False}}},
+                               False: True}
+                    print("CALLED3D")
+                    combined_dict = newdict
+                    for dict2 in reversed(edl):
+                        combined_dict = recursiveFillEmptyDicts(dict2, combined_dict)
+                    dict = recursiveFillEmptyDicts(dict, combined_dict)
+                else:
+                    newdict = {'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x'), 0),
+                               True: {
+                                   'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x'), 1),
+                                   True: {},
+                                   False: {
+                                       'if': equalFeatureRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y')),
+                                       False: {},
+                                       True: {'if': equalFeatureRow(stateKey('Actor' + str(index2), 'health'), '0'),
+                                               True: {},
+                                               False: False}}},
+                               False: {}}
+                    print("CALLED2B")
+                    edl.append(newdict)
+            else:
+                print("END")
+                newdict = {'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x'), 0),
+                           True: {
+                               'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x'), 1),
+                               True: True,
+                               False: {
+                                   'if': equalFeatureRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y')),
+                                   False: True,
+                                   True: {'if': equalFeatureRow(stateKey('Actor' + str(index2), 'health'), '0'),
+                                           True: True,
+                                           False: False}}},
+                           False: True}
+                print("CALLED3B")
+                combined_dict = newdict
+                for dict2 in reversed(edl):
+                    combined_dict = recursiveFillEmptyDicts(dict2, combined_dict)
+                dict = recursiveFillEmptyDicts(dict, combined_dict)
+        tree = makeTree(dict)
         actor.setLegal(action, tree)
 
         ##############################
@@ -302,8 +480,97 @@ class Scenario:
         # self.world.setDynamics(stateKey(action['subject'], 'energy'), action, tree)
 
         # Downmost boundary check, max Y
-        tree = makeTree({'if': equalRow(stateKey(actor.name, 'y'), self.MAP_SIZE_Y - 1),
-                         True: False, False: True})
+        dict = {}
+        edl = []
+        for index2 in range(self.E_ACTORS):
+            if not dict:
+                dict.update({'if': equalRow(stateKey(actor.name, 'y'), str(self.MAP_SIZE_Y)),
+                             True: False,
+                             False: {
+                                 'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Enemy' + str(index2), 'y'),
+                                                     -1),
+                                 True: {'if': differenceRow(stateKey(actor.name, 'y'),
+                                                            stateKey('Enemy' + str(index2), 'y'), 0),
+                                        True: {},
+                                        False: {'if': equalFeatureRow(stateKey(actor.name, 'x'),
+                                                                    stateKey('Enemy' + str(index2), 'x')),
+                                                False: {},
+                                                True: {'if': equalFeatureRow(stateKey('Enemy' + str(index2), 'health'),
+                                                                              '0'),
+                                                        True: {},
+                                                        False: False}}},
+                                 False: {}}})
+            else:
+                newdict = {'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Enemy' + str(index2), 'y'), -1),
+                           True: {
+                               'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Enemy' + str(index2), 'y'), 0),
+                               True: {},
+                               False: {
+                                   'if': equalFeatureRow(stateKey(actor.name, 'x'), stateKey('Enemy' + str(index2), 'x')),
+                                   False: {},
+                                   True: {'if': equalFeatureRow(stateKey('Enemy' + str(index2), 'health'), '0'),
+                                           True: {},
+                                           False: False}}},
+                           False: {}}
+                print("CALLED1C")
+                dict = recursiveFillEmptyDicts(dict, newdict)
+        for index2 in range(self.F_ACTORS):
+            if 'Actor' + str(index2) == actor.name:
+                continue
+            elif index2 != (self.F_ACTORS - 1):
+                if index2+1 == (self.F_ACTORS - 1) and 'Actor' + str(index2+1) == actor.name:
+                    print("END")
+                    newdict = {'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y'), -1),
+                               True: {
+                                   'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y'),
+                                                       0),
+                                   True: True,
+                                   False: {
+                                       'if': equalFeatureRow(stateKey(actor.name, 'x'),
+                                                             stateKey('Actor' + str(index2), 'x')),
+                                       False: True,
+                                       True: {'if': equalFeatureRow(stateKey('Actor' + str(index2), 'health'), '0'),
+                                              True: True,
+                                              False: False}}},
+                               False: True}
+                    print("CALLED3D")
+                    combined_dict = newdict
+                    for dict2 in reversed(edl):
+                        combined_dict = recursiveFillEmptyDicts(dict2, combined_dict)
+                    dict = recursiveFillEmptyDicts(dict, combined_dict)
+                else:
+                    newdict = {'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y'), -1),
+                               True: {
+                                   'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y'), 0),
+                                   True: {},
+                                   False: {
+                                       'if': equalFeatureRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x')),
+                                       False: {},
+                                       True: {'if': equalFeatureRow(stateKey('Actor' + str(index2), 'health'), '0'),
+                                               True: {},
+                                               False: False}}},
+                               False: {}}
+                    print("CALLED2C")
+                    edl.append(newdict)
+            else:
+                print("END")
+                newdict = {'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y'), -1),
+                           True: {
+                               'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y'), 0),
+                               True: True,
+                               False: {
+                                   'if': equalFeatureRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x')),
+                                   False: True,
+                                   True: {'if': equalFeatureRow(stateKey('Actor' + str(index2), 'health'), '0'),
+                                           True: True,
+                                           False: False}}},
+                           False: True}
+                print("CALLED3C")
+                combined_dict = newdict
+                for dict2 in reversed(edl):
+                    combined_dict = recursiveFillEmptyDicts(dict2, combined_dict)
+                dict = recursiveFillEmptyDicts(dict, combined_dict)
+        tree = makeTree(dict)
         actor.setLegal(action, tree)
 
         ##############################
@@ -318,8 +585,97 @@ class Scenario:
         # self.world.setDynamics(stateKey(action['subject'], 'energy'), action, tree)
 
         # Upmost boundary check, min Y = 0
-        tree = makeTree({'if': equalRow(stateKey(actor.name, 'y'), '0'),
-                         True: False, False: True})
+        dict = {}
+        edl = []
+        for index2 in range(self.E_ACTORS):
+            if not dict:
+                dict.update({'if': equalRow(stateKey(actor.name, 'y'), 0),
+                             True: False,
+                             False: {
+                                 'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Enemy' + str(index2), 'y'),
+                                                     0),
+                                 True: {'if': differenceRow(stateKey(actor.name, 'y'),
+                                                            stateKey('Enemy' + str(index2), 'y'), 1),
+                                        True: {},
+                                        False: {'if': equalFeatureRow(stateKey(actor.name, 'x'),
+                                                                    stateKey('Enemy' + str(index2), 'x')),
+                                                False: {},
+                                                True: {'if': equalFeatureRow(stateKey('Enemy' + str(index2), 'health'),
+                                                                              '0'),
+                                                        True: {},
+                                                        False: False}}},
+                                 False: {}}})
+            else:
+                newdict = {'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Enemy' + str(index2), 'y'), 0),
+                           True: {
+                               'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Enemy' + str(index2), 'y'), 1),
+                               True: {},
+                               False: {
+                                   'if': equalFeatureRow(stateKey(actor.name, 'x'), stateKey('Enemy' + str(index2), 'x')),
+                                   False: {},
+                                   True: {'if': equalFeatureRow(stateKey('Enemy' + str(index2), 'health'), '0'),
+                                           True: {},
+                                           False: False}}},
+                           False: {}}
+                print("CALLED1D")
+                dict = recursiveFillEmptyDicts(dict, newdict)
+        for index2 in range(self.F_ACTORS):
+            if 'Actor' + str(index2) == actor.name:
+                continue
+            elif index2 != (self.F_ACTORS - 1):
+                if index2+1 == (self.F_ACTORS - 1) and 'Actor' + str(index2+1) == actor.name:
+                    print("END")
+                    newdict = {'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y'), 0),
+                               True: {
+                                   'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y'),
+                                                       1),
+                                   True: True,
+                                   False: {
+                                       'if': equalFeatureRow(stateKey(actor.name, 'x'),
+                                                             stateKey('Actor' + str(index2), 'x')),
+                                       False: True,
+                                       True: {'if': equalFeatureRow(stateKey('Actor' + str(index2), 'health'), '0'),
+                                              True: True,
+                                              False: False}}},
+                               False: True}
+                    print("CALLED3D")
+                    combined_dict = newdict
+                    for dict2 in reversed(edl):
+                        combined_dict = recursiveFillEmptyDicts(dict2, combined_dict)
+                    dict = recursiveFillEmptyDicts(dict, combined_dict)
+                else:
+                    newdict = {'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y'), 0),
+                               True: {
+                                   'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y'), 1),
+                                   True: {},
+                                   False: {
+                                       'if': equalFeatureRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x')),
+                                       False: {},
+                                       True: {'if': equalFeatureRow(stateKey('Actor' + str(index2), 'health'), '0'),
+                                               True: {},
+                                               False: False}}},
+                               False: {}}
+                    print("CALLED2D")
+                    edl.append(newdict)
+            else:
+                print("END")
+                newdict = {'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y'), 0),
+                           True: {
+                               'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y'), 1),
+                               True: True,
+                               False: {
+                                   'if': equalFeatureRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x')),
+                                   False: True,
+                                   True: {'if': equalFeatureRow(stateKey('Actor' + str(index2), 'health'), '0'),
+                                           True: True,
+                                           False: False}}},
+                           False: True}
+                print("CALLED3D")
+                combined_dict = newdict
+                for dict2 in reversed(edl):
+                    combined_dict = recursiveFillEmptyDicts(dict2, combined_dict)
+                dict = recursiveFillEmptyDicts(dict, combined_dict)
+        tree = makeTree(dict)
         actor.setLegal(action, tree)
 
         ##############################
@@ -330,7 +686,7 @@ class Scenario:
         self.world.setDynamics(stateKey(None, 'turns'), action, tree)
         for index2 in range(0, self.E_ACTORS):
             tree = makeTree({'if': equalFeatureRow(stateKey(actor.name, 'y'), stateKey('Enemy' + str(index2), 'y')),
-                    True: {'if': differenceRow(stateKey(actor.name, 'x'),stateKey('Enemy' + str(index2), 'x'),-3),
+                    True: {'if': differenceRow(stateKey(actor.name, 'x'),stateKey('Enemy' + str(index2), 'x'),-2),
 	                    True: {'if': differenceRow(stateKey(actor.name, 'x'),stateKey('Enemy' + str(index2), 'x'),0),
 		                    True: incrementMatrix(stateKey('Enemy' + str(index2),'health'), 0.0),
 		                    False: {'if':equalFeatureRow(stateKey('Enemy' + str(index2), 'health'), '0'),
@@ -350,7 +706,7 @@ class Scenario:
         for index2 in range(0, self.E_ACTORS):
             tree = makeTree({'if': equalFeatureRow(stateKey(actor.name, 'y'), stateKey('Enemy' + str(index2), 'y')),
                     True: {'if': differenceRow(stateKey(actor.name, 'x'),stateKey('Enemy' + str(index2), 'x'), 0),
-	                    True: {'if': differenceRow(stateKey(actor.name, 'x'),stateKey('Enemy' + str(index2), 'x'),3),
+	                    True: {'if': differenceRow(stateKey(actor.name, 'x'),stateKey('Enemy' + str(index2), 'x'),2),
 		                    True: incrementMatrix(stateKey('Enemy' + str(index2),'health'), 0.0),
 		                    False: {'if':equalFeatureRow(stateKey('Enemy' + str(index2), 'health'), '0'),
                                     True: incrementMatrix(stateKey('Enemy' + str(index2),'health'), 0.0),
@@ -368,7 +724,7 @@ class Scenario:
         self.world.setDynamics(stateKey(None, 'turns'), action, tree)
         for index2 in range(0, self.E_ACTORS):
             tree = makeTree({'if': equalFeatureRow(stateKey(actor.name, 'x'), stateKey('Enemy' + str(index2), 'x')),
-                    True: {'if': differenceRow(stateKey(actor.name, 'y'),stateKey('Enemy' + str(index2), 'y'),-3),
+                    True: {'if': differenceRow(stateKey(actor.name, 'y'),stateKey('Enemy' + str(index2), 'y'),-2),
 	                    True: {'if': differenceRow(stateKey(actor.name, 'y'),stateKey('Enemy' + str(index2), 'y'),0),
 		                    True: incrementMatrix(stateKey('Enemy' + str(index2),'health'), 0.0),
 		                    False: {'if':equalFeatureRow(stateKey('Enemy' + str(index2), 'health'), '0'),
@@ -388,7 +744,7 @@ class Scenario:
         for index2 in range(0, self.E_ACTORS):
             tree = makeTree({'if': equalFeatureRow(stateKey(actor.name, 'x'), stateKey('Enemy' + str(index2), 'x')),
                     True: {'if': differenceRow(stateKey(actor.name, 'y'),stateKey('Enemy' + str(index2), 'y'),0),
-	                    True: {'if': differenceRow(stateKey(actor.name, 'y'),stateKey('Enemy' + str(index2), 'y'),3),
+	                    True: {'if': differenceRow(stateKey(actor.name, 'y'),stateKey('Enemy' + str(index2), 'y'),2),
 		                    True: incrementMatrix(stateKey('Enemy' + str(index2),'health'), 0.0),
 		                    False: {'if':equalFeatureRow(stateKey('Enemy' + str(index2), 'health'), '0'),
                                     True: incrementMatrix(stateKey('Enemy' + str(index2),'health'), 0.0),
@@ -671,16 +1027,16 @@ class Scenario:
             self.world.setState(actor.name, 'y', self.e_get_start_y(index))
 
             self.world.defineState(actor.name, 'health', int)
-            self.world.setState(actor.name, 'health', 2)
+            self.world.setState(actor.name, 'health', 3)
 
-            enemy = 'Actor' + str(index)
-            actor.setReward(minimizeDifference(stateKey(actor.name, 'x'), stateKey(enemy, 'x')), self.ENEMY[0])
-            actor.setReward(minimizeDifference(stateKey(actor.name, 'y'), stateKey(enemy, 'y')), self.ENEMY[0])
+            # enemy = 'Actor' + str(index)
+            # actor.setReward(minimizeDifference(stateKey(actor.name, 'x'), stateKey(enemy, 'x')), self.ENEMY[0])
+            # actor.setReward(minimizeDifference(stateKey(actor.name, 'y'), stateKey(enemy, 'y')), self.ENEMY[0])
 
-            actor.setReward(minimizeDifference(stateKey(actor.name, 'x'), stateKey('Distractor' + str(index), 'x')),
-                            self.ENEMY[1])
-            actor.setReward(minimizeDifference(stateKey(actor.name, 'y'), stateKey('Distractor' + str(index), 'y')),
-                            self.ENEMY[1])
+            # actor.setReward(minimizeDifference(stateKey(actor.name, 'x'), stateKey('Distractor' + str(index), 'x')),
+            #                 self.ENEMY[1])
+            # actor.setReward(minimizeDifference(stateKey(actor.name, 'y'), stateKey('Distractor' + str(index), 'y')),
+            #                 self.ENEMY[1])
 
             # actor.setReward(minimizeDifference(stateKey(enemy, 'x'), stateKey(enemy, 'goal_x')), self.ENEMY[2])
             # actor.setReward(minimizeDifference(stateKey(enemy, 'y'), stateKey(enemy, 'goal_y')), self.ENEMY[2])
@@ -688,6 +1044,10 @@ class Scenario:
             for index in range(0, self.F_ACTORS):
                 enemy = 'Actor' + str(index)
                 actor.setReward(minimizeFeature(stateKey(enemy, 'health')), self.ENEMY[0])
+                # actor.setReward(minimizeDifference(stateKey(enemy, 'x'), stateKey(enemy, 'goal_x')),
+                #                 -1.3*self.AGENT[0])
+                # actor.setReward(minimizeDifference(stateKey(enemy, 'y'), stateKey(enemy, 'goal_y')),
+                #                 -1.3*self.AGENT[0])
 
             self.set_enemy_actions(actor, index)
 
@@ -699,6 +1059,7 @@ class Scenario:
 
     def set_enemy_actions(self, actor, index):
         # Nop
+        index2 = 0
         action = actor.addAction({'verb': 'Wait'})
         tree = makeTree(incrementMatrix(stateKey(action['subject'], 'x'), 0.))
         self.world.setDynamics(stateKey(action['subject'], 'x'), action, tree)
@@ -707,59 +1068,447 @@ class Scenario:
         tree = makeTree(incrementMatrix('turns', 1.0))
         self.world.setDynamics(stateKey(None, 'turns'), action, tree)
 
-        # # Increment X position
-        # action = actor.addAction({'verb': 'MoveRight'})
-        # tree = makeTree(incrementMatrix(stateKey(action['subject'], 'x'), 1.))
-        # self.world.setDynamics(stateKey(action['subject'], 'x'), action, tree)
-        # tree = makeTree(incrementMatrix('turns', 1.0))
-        # self.world.setDynamics('turns', action, tree)
-        #
-        # # Rightmost boundary check
-        # tree = makeTree({'if': equalRow(stateKey(actor.name, 'x'), str(self.MAP_SIZE_X)),
-        #                  True: False, False: True})
-        # actor.setLegal(action, tree)
+        # Increment X position
+        action = actor.addAction({'verb': 'MoveRight'})
+        tree = makeTree(incrementMatrix(stateKey(action['subject'], 'x'), 1.))
+        self.world.setDynamics(stateKey(action['subject'], 'x'), action, tree)
+        tree = makeTree(incrementMatrix('turns', 1.0))
+        self.world.setDynamics('turns', action, tree)
+
+        # Rightmost boundary check
+        dict = {}
+
+        edl = []
+        for index2 in range(self.F_ACTORS):
+            if not dict:
+                dict.update({'if': equalRow(stateKey(actor.name, 'x'), str(self.MAP_SIZE_X)),
+                             True: False,
+                             False: {
+                                 'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x'),
+                                                     -1),
+                                 True: {'if': differenceRow(stateKey(actor.name, 'x'),
+                                                            stateKey('Actor' + str(index2), 'x'), 0),
+                                        True: {},
+                                        False: {'if': equalFeatureRow(stateKey(actor.name, 'y'),
+                                                                      stateKey('Actor' + str(index2), 'y')),
+                                                True: {'if': equalFeatureRow(stateKey('Actor' + str(index2), 'health'),
+                                                                             '0'),
+                                                       True: {},
+                                                       False: False},
+                                                False: {}}},
+                                 False: {}}})
+            else:
+                newdict = {'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x'), -1),
+                           True: {
+                               'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x'), 0),
+                               True: {},
+                               False: {
+                                   'if': equalFeatureRow(stateKey(actor.name, 'y'),
+                                                         stateKey('Actor' + str(index2), 'y')),
+                                   True: {'if': equalFeatureRow(stateKey('Actor' + str(index2), 'health'), '0'),
+                                          True: {},
+                                          False: False},
+                                   False: {}}},
+                           False: {}}
+                print("CALLED1A")
+                dict = recursiveFillEmptyDicts(dict, newdict)
+        for index2 in range(self.E_ACTORS):
+            print(index2)
+            print(self.E_ACTORS - 1)
+            if 'Enemy' + str(index2) == actor.name:
+                continue
+            elif index2 != (self.E_ACTORS - 1):
+                if index2 + 1 == (self.E_ACTORS - 1) and 'Enemy' + str(index2 + 1) == actor.name:
+                    print("END")
+                    newdict = {'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Enemy' + str(index2), 'x'), -1),
+                               True: {
+                                   'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Enemy' + str(index2), 'x'),
+                                                       0),
+                                   True: True,
+                                   False: {
+                                       'if': equalFeatureRow(stateKey(actor.name, 'y'),
+                                                             stateKey('Enemy' + str(index2), 'y')),
+                                       False: True,
+                                       True: {'if': equalFeatureRow(stateKey('Enemy' + str(index2), 'health'), '0'),
+                                              True: True,
+                                              False: False}}},
+                               False: True}
+                    print("CALLED3D")
+                    combined_dict = newdict
+                    for dict2 in reversed(edl):
+                        combined_dict = recursiveFillEmptyDicts(dict2, combined_dict)
+                    dict = recursiveFillEmptyDicts(dict, combined_dict)
+                else:
+                    newdict = {'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Enemy' + str(index2), 'x'), -1),
+                               True: {
+                                   'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Enemy' + str(index2), 'x'),
+                                                       0),
+                                   True: {},
+                                   False: {
+                                       'if': equalFeatureRow(stateKey(actor.name, 'y'),
+                                                             stateKey('Enemy' + str(index2), 'y')),
+                                       True: {'if': equalFeatureRow(stateKey('Enemy' + str(index2), 'health'), '0'),
+                                              True: {},
+                                              False: False},
+                                       False: {}}},
+                               False: {}}
+                    print("CALLED2A")
+                    edl.append(newdict)
+            else:
+                print("END")
+                newdict = {'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Enemy' + str(index2), 'x'), -1),
+                           True: {
+                               'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Enemy' + str(index2), 'x'), 0),
+                               True: True,
+                               False: {
+                                   'if': equalFeatureRow(stateKey(actor.name, 'y'),
+                                                         stateKey('Enemy' + str(index2), 'y')),
+                                   True: {'if': equalFeatureRow(stateKey('Enemy' + str(index2), 'health'), '0'),
+                                          True: True,
+                                          False: False},
+                                   False: True}},
+                           False: True}
+                print("CALLED3A")
+                combined_dict = newdict
+                for dict2 in reversed(edl):
+                    combined_dict = recursiveFillEmptyDicts(dict2, combined_dict)
+                dict = recursiveFillEmptyDicts(dict, combined_dict)
+                # print(dict)
+        tree = makeTree(dict)
+        actor.setLegal(action, tree)
         #
         # ##############################
         #
-        # # Decrement X position
-        # action = actor.addAction({'verb': 'MoveLeft'})
-        # tree = makeTree(incrementMatrix(stateKey(action['subject'], 'x'), -1.))
-        # self.world.setDynamics(stateKey(action['subject'], 'x'), action, tree)
-        # tree = makeTree(incrementMatrix('turns', 1.0))
-        # self.world.setDynamics(stateKey(None, 'turns'), action, tree)
-        #
-        # # Leftmost boundary check, min X = 0
-        # tree = makeTree({'if': equalRow(stateKey(actor.name, 'x'), '0'),
-        #                  True: False, False: True})
-        # actor.setLegal(action, tree)
+        # Decrement X position
+        action = actor.addAction({'verb': 'MoveLeft'})
+        tree = makeTree(incrementMatrix(stateKey(action['subject'], 'x'), -1.))
+        self.world.setDynamics(stateKey(action['subject'], 'x'), action, tree)
+        tree = makeTree(incrementMatrix('turns', 1.0))
+        self.world.setDynamics(stateKey(None, 'turns'), action, tree)
+
+        # Leftmost boundary check, min X = 0
+        dict = {}
+
+        edl = []
+        for index2 in range(self.F_ACTORS):
+            if not dict:
+                dict.update({'if': equalRow(stateKey(actor.name, 'x'), '0'),
+                             True: False,
+                             False: {
+                                 'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x'),
+                                                     0),
+                                 True: {'if': differenceRow(stateKey(actor.name, 'x'),
+                                                            stateKey('Actor' + str(index2), 'x'), 1),
+                                        True: {},
+                                        False: {'if': equalFeatureRow(stateKey(actor.name, 'y'),
+                                                                      stateKey('Actor' + str(index2), 'y')),
+                                                True: {'if': equalFeatureRow(stateKey('Actor' + str(index2), 'health'),
+                                                                             '0'),
+                                                       True: {},
+                                                       False: False},
+                                                False: {}}},
+                                 False: {}}})
+            else:
+                newdict = {'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x'), 0),
+                           True: {
+                               'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x'), 1),
+                               True: {},
+                               False: {
+                                   'if': equalFeatureRow(stateKey(actor.name, 'y'),
+                                                         stateKey('Actor' + str(index2), 'y')),
+                                   True: {'if': equalFeatureRow(stateKey('Actor' + str(index2), 'health'), '0'),
+                                          True: {},
+                                          False: False},
+                                   False: {}}},
+                           False: {}}
+                print("CALLED1A")
+                dict = recursiveFillEmptyDicts(dict, newdict)
+        for index2 in range(self.E_ACTORS):
+            print(index2)
+            print(self.E_ACTORS - 1)
+            if 'Enemy' + str(index2) == actor.name:
+                continue
+            elif index2 != (self.E_ACTORS - 1):
+                if index2 + 1 == (self.E_ACTORS - 1) and 'Enemy' + str(index2 + 1) == actor.name:
+                    print("END")
+                    newdict = {'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Enemy' + str(index2), 'x'), 0),
+                               True: {
+                                   'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Enemy' + str(index2), 'x'),
+                                                       1),
+                                   True: True,
+                                   False: {
+                                       'if': equalFeatureRow(stateKey(actor.name, 'y'),
+                                                             stateKey('Enemy' + str(index2), 'y')),
+                                       False: True,
+                                       True: {'if': equalFeatureRow(stateKey('Enemy' + str(index2), 'health'), '0'),
+                                              True: True,
+                                              False: False}}},
+                               False: True}
+                    print("CALLED3D")
+                    combined_dict = newdict
+                    for dict2 in reversed(edl):
+                        combined_dict = recursiveFillEmptyDicts(dict2, combined_dict)
+                    dict = recursiveFillEmptyDicts(dict, combined_dict)
+                else:
+                    newdict = {'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Enemy' + str(index2), 'x'), 0),
+                               True: {
+                                   'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Enemy' + str(index2), 'x'),
+                                                       1),
+                                   True: {},
+                                   False: {
+                                       'if': equalFeatureRow(stateKey(actor.name, 'y'),
+                                                             stateKey('Enemy' + str(index2), 'y')),
+                                       True: {'if': equalFeatureRow(stateKey('Enemy' + str(index2), 'health'), '0'),
+                                              True: {},
+                                              False: False},
+                                       False: {}}},
+                               False: {}}
+                    print("CALLED2A")
+                    edl.append(newdict)
+            else:
+                print("END")
+                newdict = {'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Enemy' + str(index2), 'x'), 0),
+                           True: {
+                               'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Enemy' + str(index2), 'x'), 1),
+                               True: True,
+                               False: {
+                                   'if': equalFeatureRow(stateKey(actor.name, 'y'),
+                                                         stateKey('Enemy' + str(index2), 'y')),
+                                   True: {'if': equalFeatureRow(stateKey('Enemy' + str(index2), 'health'), '0'),
+                                          True: True,
+                                          False: False},
+                                   False: True}},
+                           False: True}
+                print("CALLED3A")
+                combined_dict = newdict
+                for dict2 in reversed(edl):
+                    combined_dict = recursiveFillEmptyDicts(dict2, combined_dict)
+                dict = recursiveFillEmptyDicts(dict, combined_dict)
+                # print(dict)
+        tree = makeTree(dict)
+        actor.setLegal(action, tree)
         #
         # ##############################
         #
-        # # Increment Y position
-        # action = actor.addAction({'verb': 'MoveUp'})
-        # tree = makeTree(incrementMatrix(stateKey(action['subject'], 'y'), 1.))
-        # self.world.setDynamics(stateKey(action['subject'], 'y'), action, tree)
-        # tree = makeTree(incrementMatrix('turns', 1.0))
-        # self.world.setDynamics(stateKey(None, 'turns'), action, tree)
-        #
-        # # Downmost boundary check, max Y
-        # tree = makeTree({'if': equalRow(stateKey(actor.name, 'y'), self.MAP_SIZE_Y - 1),
-        #                  True: False, False: True})
-        # actor.setLegal(action, tree)
+        # Increment Y position
+        action = actor.addAction({'verb': 'MoveUp'})
+        tree = makeTree(incrementMatrix(stateKey(action['subject'], 'y'), 1.))
+        self.world.setDynamics(stateKey(action['subject'], 'y'), action, tree)
+        tree = makeTree(incrementMatrix('turns', 1.0))
+        self.world.setDynamics(stateKey(None, 'turns'), action, tree)
+
+        # Upmost boundary check, max Y
+        dict = {}
+
+        edl = []
+        for index2 in range(self.F_ACTORS):
+            if not dict:
+                dict.update({'if': equalRow(stateKey(actor.name, 'y'), str(self.MAP_SIZE_Y)),
+                             True: False,
+                             False: {
+                                 'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y'),
+                                                     -1),
+                                 True: {'if': differenceRow(stateKey(actor.name, 'y'),
+                                                            stateKey('Actor' + str(index2), 'y'), 0),
+                                        True: {},
+                                        False: {'if': equalFeatureRow(stateKey(actor.name, 'x'),
+                                                                      stateKey('Actor' + str(index2), 'x')),
+                                                True: {'if': equalFeatureRow(stateKey('Actor' + str(index2), 'health'),
+                                                                             '0'),
+                                                       True: {},
+                                                       False: False},
+                                                False: {}}},
+                                 False: {}}})
+            else:
+                newdict = {'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y'), -1),
+                           True: {
+                               'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y'), 0),
+                               True: {},
+                               False: {
+                                   'if': equalFeatureRow(stateKey(actor.name, 'x'),
+                                                         stateKey('Actor' + str(index2), 'x')),
+                                   True: {'if': equalFeatureRow(stateKey('Actor' + str(index2), 'health'), '0'),
+                                          True: {},
+                                          False: False},
+                                   False: {}}},
+                           False: {}}
+                print("CALLED1A")
+                dict = recursiveFillEmptyDicts(dict, newdict)
+        for index2 in range(self.E_ACTORS):
+            print(index2)
+            print(self.E_ACTORS - 1)
+            if 'Enemy' + str(index2) == actor.name:
+                continue
+            elif index2 != (self.E_ACTORS - 1):
+                if index2 + 1 == (self.E_ACTORS - 1) and 'Enemy' + str(index2 + 1) == actor.name:
+                    print("END")
+                    newdict = {'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Enemy' + str(index2), 'y'), -1),
+                               True: {
+                                   'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Enemy' + str(index2), 'y'),
+                                                       0),
+                                   True: True,
+                                   False: {
+                                       'if': equalFeatureRow(stateKey(actor.name, 'x'),
+                                                             stateKey('Enemy' + str(index2), 'x')),
+                                       False: True,
+                                       True: {'if': equalFeatureRow(stateKey('Enemy' + str(index2), 'health'), '0'),
+                                              True: True,
+                                              False: False}}},
+                               False: True}
+                    print("CALLED3D")
+                    combined_dict = newdict
+                    for dict2 in reversed(edl):
+                        combined_dict = recursiveFillEmptyDicts(dict2, combined_dict)
+                    dict = recursiveFillEmptyDicts(dict, combined_dict)
+                else:
+                    newdict = {'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Enemy' + str(index2), 'y'), -1),
+                               True: {
+                                   'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Enemy' + str(index2), 'y'),
+                                                       0),
+                                   True: {},
+                                   False: {
+                                       'if': equalFeatureRow(stateKey(actor.name, 'x'),
+                                                             stateKey('Enemy' + str(index2), 'x')),
+                                       True: {'if': equalFeatureRow(stateKey('Enemy' + str(index2), 'health'), '0'),
+                                              True: {},
+                                              False: False},
+                                       False: {}}},
+                               False: {}}
+                    print("CALLED2A")
+                    edl.append(newdict)
+            else:
+                print("END")
+                newdict = {'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Enemy' + str(index2), 'y'), -1),
+                           True: {
+                               'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Enemy' + str(index2), 'y'), 0),
+                               True: True,
+                               False: {
+                                   'if': equalFeatureRow(stateKey(actor.name, 'x'),
+                                                         stateKey('Enemy' + str(index2), 'x')),
+                                   True: {'if': equalFeatureRow(stateKey('Enemy' + str(index2), 'health'), '0'),
+                                          True: True,
+                                          False: False},
+                                   False: True}},
+                           False: True}
+                print("CALLED3A")
+                combined_dict = newdict
+                for dict2 in reversed(edl):
+                    combined_dict = recursiveFillEmptyDicts(dict2, combined_dict)
+                dict = recursiveFillEmptyDicts(dict, combined_dict)
+                # print(dict)
+        tree = makeTree(dict)
+        actor.setLegal(action, tree)
         #
         # ##############################
         #
-        # # Decrement Y position
-        # action = actor.addAction({'verb': 'MoveDown'})
-        # tree = makeTree(incrementMatrix(stateKey(action['subject'], 'y'), -1.))
-        # self.world.setDynamics(stateKey(action['subject'], 'y'), action, tree)
-        # tree = makeTree(incrementMatrix('turns', 1.0))
-        # self.world.setDynamics(stateKey(None, 'turns'), action, tree)
-        #
-        # # Upmost boundary check, min Y = 0
-        # tree = makeTree({'if': equalRow(stateKey(actor.name, 'y'), '0'),
-        #                  True: False, False: True})
-        # actor.setLegal(action, tree)
+        # Decrement Y position
+        action = actor.addAction({'verb': 'MoveDown'})
+        tree = makeTree(incrementMatrix(stateKey(action['subject'], 'y'), -1.))
+        self.world.setDynamics(stateKey(action['subject'], 'y'), action, tree)
+        tree = makeTree(incrementMatrix('turns', 1.0))
+        self.world.setDynamics(stateKey(None, 'turns'), action, tree)
+
+        # Downmost boundary check, min Y = 0
+        dict = {}
+
+        edl = []
+        for index2 in range(self.F_ACTORS):
+            if not dict:
+                dict.update({'if': equalRow(stateKey(actor.name, 'y'), '0'),
+                             True: False,
+                             False: {
+                                 'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y'),
+                                                     0),
+                                 True: {'if': differenceRow(stateKey(actor.name, 'y'),
+                                                            stateKey('Actor' + str(index2), 'y'), 1),
+                                        True: {},
+                                        False: {'if': equalFeatureRow(stateKey(actor.name, 'x'),
+                                                                      stateKey('Actor' + str(index2), 'x')),
+                                                True: {'if': equalFeatureRow(stateKey('Actor' + str(index2), 'health'),
+                                                                             '0'),
+                                                       True: {},
+                                                       False: False},
+                                                False: {}}},
+                                 False: {}}})
+            else:
+                newdict = {'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y'), 0),
+                           True: {
+                               'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y'), 1),
+                               True: {},
+                               False: {
+                                   'if': equalFeatureRow(stateKey(actor.name, 'x'),
+                                                         stateKey('Actor' + str(index2), 'x')),
+                                   True: {'if': equalFeatureRow(stateKey('Actor' + str(index2), 'health'), '0'),
+                                          True: {},
+                                          False: False},
+                                   False: {}}},
+                           False: {}}
+                print("CALLED1A")
+                dict = recursiveFillEmptyDicts(dict, newdict)
+        for index2 in range(self.E_ACTORS):
+            print(index2)
+            print(self.E_ACTORS - 1)
+            if 'Enemy' + str(index2) == actor.name:
+                continue
+            elif index2 != (self.E_ACTORS - 1):
+                if index2 + 1 == (self.E_ACTORS - 1) and 'Enemy' + str(index2 + 1) == actor.name:
+                    print("END")
+                    newdict = {'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Enemy' + str(index2), 'y'), 0),
+                               True: {
+                                   'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Enemy' + str(index2), 'y'),
+                                                       1),
+                                   True: True,
+                                   False: {
+                                       'if': equalFeatureRow(stateKey(actor.name, 'x'),
+                                                             stateKey('Enemy' + str(index2), 'x')),
+                                       False: True,
+                                       True: {'if': equalFeatureRow(stateKey('Enemy' + str(index2), 'health'), '0'),
+                                              True: True,
+                                              False: False}}},
+                               False: True}
+                    print("CALLED3D")
+                    combined_dict = newdict
+                    for dict2 in reversed(edl):
+                        combined_dict = recursiveFillEmptyDicts(dict2, combined_dict)
+                    dict = recursiveFillEmptyDicts(dict, combined_dict)
+                else:
+                    newdict = {'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Enemy' + str(index2), 'y'), 0),
+                               True: {
+                                   'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Enemy' + str(index2), 'y'),
+                                                       1),
+                                   True: {},
+                                   False: {
+                                       'if': equalFeatureRow(stateKey(actor.name, 'x'),
+                                                             stateKey('Enemy' + str(index2), 'x')),
+                                       True: {'if': equalFeatureRow(stateKey('Enemy' + str(index2), 'health'), '0'),
+                                              True: {},
+                                              False: False},
+                                       False: {}}},
+                               False: {}}
+                    print("CALLED2A")
+                    edl.append(newdict)
+            else:
+                print("END")
+                newdict = {'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Enemy' + str(index2), 'y'), 0),
+                           True: {
+                               'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Enemy' + str(index2), 'y'), 1),
+                               True: True,
+                               False: {
+                                   'if': equalFeatureRow(stateKey(actor.name, 'x'),
+                                                         stateKey('Enemy' + str(index2), 'x')),
+                                   True: {'if': equalFeatureRow(stateKey('Enemy' + str(index2), 'health'), '0'),
+                                          True: True,
+                                          False: False},
+                                   False: True}},
+                           False: True}
+                print("CALLED3A")
+                combined_dict = newdict
+                for dict2 in reversed(edl):
+                    combined_dict = recursiveFillEmptyDicts(dict2, combined_dict)
+                dict = recursiveFillEmptyDicts(dict, combined_dict)
+                # print(dict)
+        tree = makeTree(dict)
+        actor.setLegal(action, tree)
 
         ##############################
 
@@ -767,15 +1516,22 @@ class Scenario:
         action = actor.addAction({'verb': 'AttackRight'})
         tree = makeTree(incrementMatrix('turns', 1.0))
         self.world.setDynamics(stateKey(None, 'turns'), action, tree)
-        for index2 in range(0, self.F_ACTORS):
-            tree = makeTree({'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x'),3),
-                    True: {'if': equalFeatureRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y')),
-                           True: incrementMatrix(stateKey('Actor' + str(index2),'health'), -1), False: incrementMatrix(stateKey('Actor' + str(index2),'health'), 0)},
-                    False: incrementMatrix(stateKey('Actor' + str(index2),'health'), 0)})
+        for index2 in range(0, self.E_ACTORS):
+            tree = makeTree({'if': equalFeatureRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y')),
+                             True: {'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x'),
+                                                        -2),
+                                    True: {'if': differenceRow(stateKey(actor.name, 'x'),
+                                                               stateKey('Actor' + str(index2), 'x'), 0),
+                                           True: incrementMatrix(stateKey('Actor' + str(index2), 'health'), 0.0),
+                                           False: {
+                                               'if': equalFeatureRow(stateKey('Actor' + str(index2), 'health'), '0'),
+                                               True: incrementMatrix(stateKey('Actor' + str(index2), 'health'), 0.0),
+                                               False: incrementMatrix(stateKey('Actor' + str(index2), 'health'),
+                                                                      -1.0)}},
+                                    False: incrementMatrix(stateKey('Actor' + str(index2), 'health'), 0.0)},
+                             False: incrementMatrix(stateKey('Actor' + str(index2), 'health'), 0.0)})
             self.world.setDynamics(stateKey('Actor' + str(index2), 'health'), action, tree)
-        actor.setLegal(action, makeTree({'if': differenceRow(stateKey(actor.name, 'health'), '0', '1'),
-                                         True: True,
-                                         False:False}))
+        actor.setLegal(action, makeTree({'if': equalRow(stateKey(actor.name, 'health'), '0'), True: False, False: True}))
 
         ##############################
 
@@ -783,15 +1539,22 @@ class Scenario:
         action = actor.addAction({'verb': 'AttackLeft'})
         tree = makeTree(incrementMatrix('turns', 1.0))
         self.world.setDynamics(stateKey(None, 'turns'), action, tree)
-        for index2 in range(0, self.F_ACTORS):
-            tree = makeTree({'if': differenceRow(stateKey('Actor' + str(index2), 'x'), stateKey(actor.name, 'x'), 3),
-                    True: {'if': equalFeatureRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y')),
-                           True: incrementMatrix(stateKey('Actor' + str(index2),'health'), -1), False: incrementMatrix(stateKey('Actor' + str(index2),'health'), 0)},
-                    False: incrementMatrix(stateKey('Actor' + str(index2),'health'), 0)})
+        for index2 in range(0, self.E_ACTORS):
+            tree = makeTree({'if': equalFeatureRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y')),
+                             True: {'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x'),
+                                                        0),
+                                    True: {'if': differenceRow(stateKey(actor.name, 'x'),
+                                                               stateKey('Actor' + str(index2), 'x'), 2),
+                                           True: incrementMatrix(stateKey('Actor' + str(index2), 'health'), 0.0),
+                                           False: {
+                                               'if': equalFeatureRow(stateKey('Actor' + str(index2), 'health'), '0'),
+                                               True: incrementMatrix(stateKey('Actor' + str(index2), 'health'), 0.0),
+                                               False: incrementMatrix(stateKey('Actor' + str(index2), 'health'),
+                                                                      -1.0)}},
+                                    False: incrementMatrix(stateKey('Actor' + str(index2), 'health'), 0.0)},
+                             False: incrementMatrix(stateKey('Actor' + str(index2), 'health'), 0.0)})
             self.world.setDynamics(stateKey('Actor' + str(index2), 'health'), action, tree)
-        actor.setLegal(action, makeTree({'if': differenceRow(stateKey(actor.name, 'health'), '0', '1'),
-                                         True: True,
-                                         False: False}))
+        actor.setLegal(action, makeTree({'if': equalRow(stateKey(actor.name, 'health'), '0'), True: False, False: True}))
 
         ##############################
 
@@ -799,15 +1562,22 @@ class Scenario:
         action = actor.addAction({'verb': 'AttackUp'})
         tree = makeTree(incrementMatrix('turns', 1.0))
         self.world.setDynamics(stateKey(None, 'turns'), action, tree)
-        for index2 in range(0, self.F_ACTORS):
+        for index2 in range(0, self.E_ACTORS):
             tree = makeTree({'if': equalFeatureRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x')),
-                    True: {'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y'), 3),
-                           True: incrementMatrix(stateKey('Actor' + str(index2),'health'), 0), False: incrementMatrix(stateKey('Actor' + str(index2),'health'), -1)},
-                    False: incrementMatrix(stateKey('Actor' + str(index2),'health'), 0)})
+                             True: {'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y'),
+                                                        -2),
+                                    True: {'if': differenceRow(stateKey(actor.name, 'y'),
+                                                               stateKey('Actor' + str(index2), 'y'), 0),
+                                           True: incrementMatrix(stateKey('Actor' + str(index2), 'health'), 0.0),
+                                           False: {
+                                               'if': equalFeatureRow(stateKey('Actor' + str(index2), 'health'), '0'),
+                                               True: incrementMatrix(stateKey('Actor' + str(index2), 'health'), 0.0),
+                                               False: incrementMatrix(stateKey('Actor' + str(index2), 'health'),
+                                                                      -1.0)}},
+                                    False: incrementMatrix(stateKey('Actor' + str(index2), 'health'), 0.0)},
+                             False: incrementMatrix(stateKey('Actor' + str(index2), 'health'), 0.0)})
             self.world.setDynamics(stateKey('Actor' + str(index2), 'health'), action, tree)
-        actor.setLegal(action, makeTree({'if': differenceRow(stateKey(actor.name, 'health'), '0', '1'),
-                                         True: True,
-                                         False: False}))
+        actor.setLegal(action, makeTree({'if': equalRow(stateKey(actor.name, 'health'), '0'), True: False, False: True}))
 
         ##############################
 
@@ -815,16 +1585,23 @@ class Scenario:
         action = actor.addAction({'verb': 'AttackDown'})
         tree = makeTree(incrementMatrix('turns', 1.0))
         self.world.setDynamics(stateKey(None, 'turns'), action, tree)
-        for index2 in range(0, self.F_ACTORS):
+        for index2 in range(0, self.E_ACTORS):
             tree = makeTree({'if': equalFeatureRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x')),
-                    True: {
-                        'if': differenceRow(stateKey('Actor' + str(index2), 'y'), stateKey(actor.name, 'y'), 3),
-                        True: incrementMatrix(stateKey('Actor' + str(index2),'health'), 0), False: incrementMatrix(stateKey('Actor' + str(index2),'health'), -1)},
-                    False: incrementMatrix(stateKey('Actor' + str(index2),'health'), 0)})
+                             True: {'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y'),
+                                                        0),
+                                    True: {'if': differenceRow(stateKey(actor.name, 'y'),
+                                                               stateKey('Actor' + str(index2), 'y'), 2),
+                                           True: incrementMatrix(stateKey('Actor' + str(index2), 'health'), 0.0),
+                                           False: {
+                                               'if': equalFeatureRow(stateKey('Actor' + str(index2), 'health'), '0'),
+                                               True: incrementMatrix(stateKey('Actor' + str(index2), 'health'), 0.0),
+                                               False: incrementMatrix(stateKey('Actor' + str(index2), 'health'),
+                                                                      -1.0)}},
+                                    False: incrementMatrix(stateKey('Actor' + str(index2), 'health'), 0.0)},
+                             False: incrementMatrix(stateKey('Actor' + str(index2), 'health'), 0.0)})
             self.world.setDynamics(stateKey('Actor' + str(index2), 'health'), action, tree)
-        actor.setLegal(action, makeTree({'if': differenceRow(stateKey(actor.name, 'health'), '0', '1'),
-                                         True: True,
-                                         False: False}))
+        actor.setLegal(action, makeTree({'if': equalRow(stateKey(actor.name, 'health'), '0'), True: False, False: True}))
+
     # Obsolete
     def evaluate_score(self):
         cwd = os.getcwd()
@@ -911,6 +1688,8 @@ class Scenario:
         file.write("Overall Score: \n")
         for index in range(0, self.F_ACTORS):
             score = agent_goal_scores[index] + agent_enemy_scores[index] + 20 + 20 - turns
+            if int(self.world.getState('Actor' + str(index), 'health').domain()[0]) == 0:
+                score = -1
             possible = max_distance + 20 + 20
             print(float(score * 100 / possible))
             total = float(score * 100 / possible)
@@ -1057,10 +1836,16 @@ class Scenario:
             for index in range(0, self.F_ACTORS):
                 agents[index].x = int(self.world.getState('Actor' + str(index), 'x').domain()[0]) * 32
                 agents[index].y = int(self.world.getState('Actor' + str(index), 'y').domain()[0]) * 32
+                if int(self.world.getState('Actor' + str(index), 'health').domain()[0]) == 0:
+                    agents[index].img = pyglet.resource.image("rock.png")
 
             for index in range(0, self.E_ACTORS):
+                actor = self.friendly_agents[index]
+                # print(actor.decide(self.world.state[None].domain()[0], horizon = 5))
                 enemies[index].x = int(self.world.getState('Enemy' + str(index), 'x').domain()[0]) * 32
                 enemies[index].y = int(self.world.getState('Enemy' + str(index), 'y').domain()[0]) * 32
+                if int(self.world.getState('Enemy' + str(index), 'health').domain()[0]) == 0:
+                    enemies[index].img = pyglet.resource.image("rock.png")
 
             # for index in range(0, self.D_ACTORS):
             #     distractors[index].x = int(self.world.getState('Distractor' + str(index), 'x').domain()[0]) * 32
@@ -1088,12 +1873,12 @@ def run(genome):
     run = Scenario(
         MAP_SIZE_X=7,
         MAP_SIZE_Y=7,
-        F_ACTORS=1,
-        F_START_LOC=["3,1"],
-        F_GOAL_LOC=["5,5"],
+        F_ACTORS=2,
+        F_START_LOC=[str(random.randint(0,6))+","+str(random.randint(0,6)),str(random.randint(0,6))+","+str(random.randint(0,6))],
+        F_GOAL_LOC=["5,5","5,5"],
         F_ENERGY=[10.0],
-        E_ACTORS=1,
-        E_START_LOC=["5,4"],
+        E_ACTORS=2,
+        E_START_LOC=["5,4","4,5"],
         E_PATROL_RANGE=5,
         # D_ACTORS=1,
         # D_START_LOC=["2,3"],
@@ -1103,8 +1888,8 @@ def run(genome):
         BASE=[b1, b2],
         # DISTRACTOR=[h1, h2],
         # SUPPLIER=[d1, d2],
-        ENEMY=[0.5, 0.7, -1.0],
-        AGENT=[s1, s2])
+        ENEMY=[0.7, 0.7, -1.0],
+        AGENT=[0.7, 0.3, -5.0])
     score = run.run_with_visual()
 
     return score
@@ -1116,9 +1901,25 @@ def run(genome):
     AGENT=[0.5, -0.5]
     '''
 
+def recursiveFillEmptyDicts(dict, newdict):
+    copydict = copy.deepcopy(dict)
+    if type(dict) is bool:
+        return dict
+    for (key,value) in copydict.iteritems():
+        # print(dict[key])
+        if type(value) is type(dict):
+            if value == {}:
+                # print("EMPTY")
+                dict[key].update(newdict)
+            else:
+                print('RECURSE')
+                dict[key] = recursiveFillEmptyDicts(dict[key],newdict)
+                print("OUT")
+    return dict
+
 
 if __name__ == '__main__':
-    print(run([0.4219082416329605, 0.3776566392876486, 0.43254428266334544, 0.0, -0.6093841194695164, 0.2128550551796511,0.5,0.7]))
+    print(run([0.4219082416329605, -0.3776566392876486, 0.43254428266334544, 0.0, -0.6093841194695164, 0.2128550551796511,0.5,0.7]))
     '''
     for i1 in range(0,10):
         sg = float(i1/10)

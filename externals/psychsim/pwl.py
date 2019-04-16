@@ -745,7 +745,6 @@ def thresholdRow(key,threshold):
     """
     return KeyedPlane(KeyedVector({key: 1.}),threshold)
 def differenceRow(key1,key2,threshold):
-    print "IT ME"
     """
     @return: a plane testing whether the difference between the first and second keyed values exceeds the given threshold
     @rtype: L{KeyedPlane}
