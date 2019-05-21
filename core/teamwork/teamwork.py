@@ -39,7 +39,7 @@ class Scenario:
                  # DISTRACTOR=[0.0, 0.0],
                  # SUPPLIER=[0.0, 0.0],
                  ENEMY=[0.0, 0.0, 0.0],
-                 AGENT=[0.0, 0.0]):
+                 AGENT=[0.0, 0.0, 0.0]):
 
         self.MAP_SIZE_X = MAP_SIZE_X
         self.MAP_SIZE_Y = MAP_SIZE_Y
@@ -220,7 +220,7 @@ class Scenario:
             actor.setReward(minimizeDifference(stateKey(actor.name, 'y'), stateKey(actor.name, 'goal_y')),
                             self.AGENT[0])
             actor.setReward(achieveFeatureValue(stateKey(actor.name, 'health'),'0'), self.AGENT[2])
-            # Negative reward for going towards enemy
+            # Negative reward for being eliminated
             actors.append(actor)
             enemy = 'Enemy' + str(index)
 
@@ -300,7 +300,7 @@ class Scenario:
                                    False: {}}},
                            False: {}}
                 print("CALLED1A")
-                dict = recursiveFillEmptyDicts(dict, newdict)
+                edl.append(newdict)
         for index2 in range(self.F_ACTORS):
             print(index2)
             print(self.F_ACTORS-1)
@@ -408,7 +408,7 @@ class Scenario:
                                            False: False}}},
                            False: {}}
                 print("CALLED1B")
-                dict = recursiveFillEmptyDicts(dict, newdict)
+                edl.append(newdict)
         for index2 in range(self.F_ACTORS):
             if 'Actor' + str(index2) == actor.name:
                 continue
@@ -513,7 +513,7 @@ class Scenario:
                                            False: False}}},
                            False: {}}
                 print("CALLED1C")
-                dict = recursiveFillEmptyDicts(dict, newdict)
+                edl.append(newdict)
         for index2 in range(self.F_ACTORS):
             if 'Actor' + str(index2) == actor.name:
                 continue
@@ -618,7 +618,7 @@ class Scenario:
                                            False: False}}},
                            False: {}}
                 print("CALLED1D")
-                dict = recursiveFillEmptyDicts(dict, newdict)
+                edl.append(newdict)
         for index2 in range(self.F_ACTORS):
             if 'Actor' + str(index2) == actor.name:
                 continue
@@ -1041,6 +1041,8 @@ class Scenario:
             # actor.setReward(minimizeDifference(stateKey(enemy, 'x'), stateKey(enemy, 'goal_x')), self.ENEMY[2])
             # actor.setReward(minimizeDifference(stateKey(enemy, 'y'), stateKey(enemy, 'goal_y')), self.ENEMY[2])
             # Reward for attacking enemy
+            dict = {}
+            edl = []
             for index in range(0, self.F_ACTORS):
                 enemy = 'Actor' + str(index)
                 actor.setReward(minimizeFeature(stateKey(enemy, 'health')), self.ENEMY[0])
@@ -1048,13 +1050,26 @@ class Scenario:
                 #                 -1.3*self.AGENT[0])
                 # actor.setReward(minimizeDifference(stateKey(enemy, 'y'), stateKey(enemy, 'goal_y')),
                 #                 -1.3*self.AGENT[0])
+                if index == 0:
+                    dict = {'if': equalFeatureRow(stateKey('Actor' + str(index), 'health'), '0'),
+                     True: {}, False: False}
+                elif index != (self.F_ACTORS - 1):
+                    newdict = {'if': equalFeatureRow(stateKey('Actor' + str(index), 'health'), '0'),
+                     True: {}, False: False}
+                    edl.append(newdict)
+                else:
+                    newdict = {'if': equalFeatureRow(stateKey('Actor' + str(index), 'health'), '0'),
+                               True: True, False: False}
+                    combined_dict = newdict
+                    for dict2 in reversed(edl):
+                        combined_dict = recursiveFillEmptyDicts(dict2, combined_dict)
+                    dict = recursiveFillEmptyDicts(dict, combined_dict)
 
             self.set_enemy_actions(actor, index)
 
-            # Terminate enemy agent if health is 0
+            # Terminate game if all actor agents' health is 0
 
-            tree = makeTree({'if': equalFeatureRow(stateKey('Actor'+str(index), 'health'), '0'),
-                    True: True, False: False})
+            tree = makeTree(dict)
             self.world.addTermination(tree)
 
     def set_enemy_actions(self, actor, index):
@@ -1111,7 +1126,7 @@ class Scenario:
                                    False: {}}},
                            False: {}}
                 print("CALLED1A")
-                dict = recursiveFillEmptyDicts(dict, newdict)
+                edl.append(newdict)
         for index2 in range(self.E_ACTORS):
             print(index2)
             print(self.E_ACTORS - 1)
@@ -1222,7 +1237,7 @@ class Scenario:
                                    False: {}}},
                            False: {}}
                 print("CALLED1A")
-                dict = recursiveFillEmptyDicts(dict, newdict)
+                edl.append(newdict)
         for index2 in range(self.E_ACTORS):
             print(index2)
             print(self.E_ACTORS - 1)
@@ -1333,7 +1348,7 @@ class Scenario:
                                    False: {}}},
                            False: {}}
                 print("CALLED1A")
-                dict = recursiveFillEmptyDicts(dict, newdict)
+                edl.append(newdict)
         for index2 in range(self.E_ACTORS):
             print(index2)
             print(self.E_ACTORS - 1)
@@ -1444,7 +1459,7 @@ class Scenario:
                                    False: {}}},
                            False: {}}
                 print("CALLED1A")
-                dict = recursiveFillEmptyDicts(dict, newdict)
+                edl.append(newdict)
         for index2 in range(self.E_ACTORS):
             print(index2)
             print(self.E_ACTORS - 1)
@@ -1605,7 +1620,7 @@ class Scenario:
     # Obsolete
     def evaluate_score(self):
         cwd = os.getcwd()
-        print(cwd)
+        # print(cwd)
         t = str(time())
         file = open(cwd + "\output\\" + t + ".txt", "w")
         file.write("Parameters:\n")
@@ -1691,29 +1706,32 @@ class Scenario:
             if int(self.world.getState('Actor' + str(index), 'health').domain()[0]) == 0:
                 score = -1
             possible = max_distance + 20 + 20
-            print(float(score * 100 / possible))
+            # print(float(score * 100 / possible))
             total = float(score * 100 / possible)
             file.write("Soldier" + str(index) + ": " + str(total))
 
     def return_score(self):
         max_distance = self.MAP_SIZE_X + self.MAP_SIZE_Y
-
-        ending_x = int(self.world.getState('Actor' + str(0), 'x').domain()[0])
-        ending_y = int(self.world.getState('Actor' + str(0), 'y').domain()[0])
-        soldier_goal_distance = abs(self.f_get_goal_x(0) - ending_x) + abs(
-                self.f_get_goal_y(0) - ending_y)
-
-        soldier_x = int(self.world.getState('Actor' + str(0), 'x').domain()[0])
-        soldier_y = int(self.world.getState('Actor' + str(0), 'y').domain()[0])
-        enemy_x = int(self.world.getState('Enemy' + str(0), 'x').domain()[0])
-        enemy_y = int(self.world.getState('Enemy' + str(0), 'y').domain()[0])
-        soldier_enemy_distance = abs(soldier_x - enemy_x) + abs(
-            soldier_y - enemy_y)
-
-        helicopter_score = int(self.world.getState('Distractor'+str(0), 'cost').domain()[0])
-
-        overall = soldier_enemy_distance - soldier_goal_distance + 20 - helicopter_score
-        return (overall,)
+        win = 0.0
+        for index in range(0,self.F_ACTORS):
+            soldier_health = int(self.world.getState('Actor' + str(index), 'health').domain()[0])
+            ending_x = int(self.world.getState('Actor' + str(index), 'x').domain()[0])
+            ending_y = int(self.world.getState('Actor' + str(index), 'y').domain()[0])
+            soldier_goal_distance = abs(self.f_get_goal_x(0) - ending_x) + abs(
+                    self.f_get_goal_y(0) - ending_y)
+            if soldier_goal_distance == 0 and soldier_health > 0:
+                win = 1.0
+        # soldier_x = int(self.world.getState('Actor' + str(0), 'x').domain()[0])
+        # soldier_y = int(self.world.getState('Actor' + str(0), 'y').domain()[0])
+        # enemy_x = int(self.world.getState('Enemy' + str(0), 'x').domain()[0])
+        # enemy_y = int(self.world.getState('Enemy' + str(0), 'y').domain()[0])
+        # soldier_enemy_distance = abs(soldier_x - enemy_x) + abs(
+        #     soldier_y - enemy_y)
+        #
+        # helicopter_score = int(self.world.getState('Distractor'+str(0), 'cost').domain()[0])
+        #
+        # overall = soldier_enemy_distance - soldier_goal_distance + 20 - helicopter_score
+        return win
 
     def run_without_visual(self):
         while not self.world.terminated():
@@ -1860,7 +1878,7 @@ class Scenario:
         Thread(target=pyglet.app.run()).start()
         # target=pyglet.app.run()
 
-def run(genome):
+def run(genome,visual):
     s1 = genome[0]
     s2 = genome[1]
     b1 = genome[2]
@@ -1873,12 +1891,12 @@ def run(genome):
     run = Scenario(
         MAP_SIZE_X=7,
         MAP_SIZE_Y=7,
-        F_ACTORS=2,
-        F_START_LOC=[str(random.randint(0,6))+","+str(random.randint(0,6)),str(random.randint(0,6))+","+str(random.randint(0,6))],
-        F_GOAL_LOC=["5,5","5,5"],
+        F_ACTORS=3,
+        F_START_LOC=[str(random.randint(0,6))+","+str(random.randint(0,6)),str(random.randint(0,6))+","+str(random.randint(0,6)),str(random.randint(0,6))+","+str(random.randint(0,6))],
+        F_GOAL_LOC=["5,5","5,5","5,5"],
         F_ENERGY=[10.0],
-        E_ACTORS=2,
-        E_START_LOC=["5,4","4,5"],
+        E_ACTORS=3,
+        E_START_LOC=["5,4","4,5","6,5"],
         E_PATROL_RANGE=5,
         # D_ACTORS=1,
         # D_START_LOC=["2,3"],
@@ -1890,8 +1908,12 @@ def run(genome):
         # SUPPLIER=[d1, d2],
         ENEMY=[0.7, 0.7, -1.0],
         AGENT=[0.7, 0.3, -5.0])
-    score = run.run_with_visual()
-
+    score = None
+    if visual:
+        score = run.run_with_visual()
+    else:
+        score = run.run_without_visual()
+    print(score)
     return score
 
     '''
@@ -1919,7 +1941,7 @@ def recursiveFillEmptyDicts(dict, newdict):
 
 
 if __name__ == '__main__':
-    print(run([0.4219082416329605, -0.3776566392876486, 0.43254428266334544, 0.0, -0.6093841194695164, 0.2128550551796511,0.5,0.7]))
+    print(run([0.4219082416329605, -0.3776566392876486, 0.43254428266334544, 0.0, -0.6093841194695164, 0.2128550551796511,0.5,0.7],True))
     '''
     for i1 in range(0,10):
         sg = float(i1/10)
