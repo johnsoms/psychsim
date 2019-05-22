@@ -2,10 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="e5e2ba2b-8b34-4046-bf88-129808d2f254" name="Default" comment="">
-      <change afterPath="$PROJECT_DIR$/core/teamwork/rewardanalysis.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/core/teamwork/teamtutor.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/teamwork/teamwork.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/teamwork/teamwork.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/teamwork/teamtutor.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/teamwork/teamtutor.py" afterDir="false" />
     </list>
     <ignored path="Tutoring-for-Team-Training.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -39,8 +36,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/core/teamwork/teamwork.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="682">
-              <caret line="1916" column="16" lean-forward="true" selection-start-line="1880" selection-end-line="1916" selection-end-column="16" />
+            <state relative-caret-position="377">
+              <caret line="266" column="78" lean-forward="true" selection-start-line="265" selection-start-column="8" selection-end-line="266" selection-end-column="78" />
               <folding>
                 <element signature="e#346#393#0" expanded="true" />
               </folding>
@@ -51,8 +48,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/core/teamwork/teamtutor.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1425">
-              <caret line="75" column="4" selection-start-line="75" selection-start-column="4" selection-end-line="77" selection-end-column="105" />
+            <state relative-caret-position="427">
+              <caret line="98" column="90" selection-start-line="98" selection-start-column="90" selection-end-line="98" selection-end-column="90" />
               <folding>
                 <element signature="e#346#393#0" expanded="true" />
               </folding>
@@ -696,16 +693,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/core/teamwork/rewardanalysis.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="627">
-          <caret line="36" column="38" selection-start-line="36" selection-start-column="38" selection-end-line="36" selection-end-column="38" />
-          <folding>
-            <element signature="e#0#14#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/externals/psychsim/world.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="8493">
@@ -733,10 +720,20 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/core/teamwork/rewardanalysis.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="627">
+          <caret line="36" column="38" selection-start-line="36" selection-start-column="38" selection-end-line="36" selection-end-column="38" />
+          <folding>
+            <element signature="e#0#14#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/core/teamwork/teamwork.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="682">
-          <caret line="1916" column="16" lean-forward="true" selection-start-line="1880" selection-end-line="1916" selection-end-column="16" />
+        <state relative-caret-position="377">
+          <caret line="266" column="78" lean-forward="true" selection-start-line="265" selection-start-column="8" selection-end-line="266" selection-end-column="78" />
           <folding>
             <element signature="e#346#393#0" expanded="true" />
           </folding>
@@ -745,8 +742,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/core/teamwork/teamtutor.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1425">
-          <caret line="75" column="4" selection-start-line="75" selection-start-column="4" selection-end-line="77" selection-end-column="105" />
+        <state relative-caret-position="427">
+          <caret line="98" column="90" selection-start-line="98" selection-start-column="90" selection-end-line="98" selection-end-column="90" />
           <folding>
             <element signature="e#346#393#0" expanded="true" />
           </folding>

@@ -20,19 +20,28 @@ import random
 import copy
 
 
+
 class Scenario:
     def __init__(self,
                  S_ACTORS=0,
-                 S_START_R=[0.0],
+                 S_START_R=[[0.0]],
                  RESULT = 0.0,
-                 AGENT=[0.0]):
+                 AGENT=[[0.0]],
+                 BEST=[0.0],
+                 TUTOR=[0.0]):
 
         self.S_ACTORS = S_ACTORS
         self.S_START_R = S_START_R
         self.RESULT = RESULT
         self.AGENT = AGENT
+        self.BEST = BEST
+        self.TUTOR = TUTOR
 
         self.world = World()
+        for i in range(len(self.BEST)):
+            self.world.defineState(None,'Best_R'+str(i),float)
+            self.world.setState(None,'Best_R'+str(i),self.BEST[i])
+
         self.create_tutor_agent()
 
         self.paused = False
@@ -49,54 +58,63 @@ def create_tutor_agent(self):
     self.world.addAgent(actor)
     actor.setHorizon(5)
 
-    # Set agent's starting location
-    self.world.defineState(actor.name, 'x', int)
-    self.world.setState(actor.name, 'x', self.f_get_start_x(index))
-    self.world.defineState(actor.name, 'goal_x', int)
-    self.world.setState(actor.name, 'goal_x', self.f_get_goal_x(index))
-
-    self.world.defineState(actor.name, 'y', int)
-    self.world.setState(actor.name, 'y', self.f_get_start_y(index))
-    self.world.defineState(actor.name, 'goal_y', int)
-    self.world.setState(actor.name, 'goal_y', self.f_get_goal_y(index))
-
-    self.world.defineState(actor.name, 'health', int)
-    self.world.setState(actor.name, 'health', 3)
-
-    # Positive reward for going towards goal
-    actor.setReward(minimizeDifference(stateKey(actor.name, 'x'), stateKey(actor.name, 'goal_x')),
-                    self.AGENT[0])
-    actor.setReward(minimizeDifference(stateKey(actor.name, 'y'), stateKey(actor.name, 'goal_y')),
-                    self.AGENT[0])
-    actor.setReward(achieveFeatureValue(stateKey(actor.name, 'health'), '0'), self.AGENT[2])
-    # Negative reward for being eliminated
-    actors.append(actor)
-    enemy = 'Enemy' + str(index)
-
-    # actor.setReward(minimizeDifference(stateKey(actor.name, 'x'), stateKey(enemy, 'x')), self.AGENT[1])
-    # actor.setReward(minimizeDifference(stateKey(actor.name, 'y'), stateKey(enemy, 'y')), self.AGENT[1])
-    # actor.setReward(minimizeDifference(stateKey(actor.name, 'y'), stateKey(enemy, 'y')), self.AGENT[1])
     self.create_student_agents()
 
-def create_student_agents(self):
+    for index in range(self.S_ACTORS):
+        for i in range(len(self.BEST)):
+            actor.setReward(minimizeDifference(stateKey('Actor'+str(index),'R'+str(i)),stateKey(None,"Best_R"+str(i))),self.TUTOR[i])
 
+    self.set_tutor_actions()
+
+def create_student_agents(self):
+    for index in range(self.S_ACTORS):
+        actor = Agent('Student'+str(index))
+        self.world.addAgent(actor)
+        actor.setHorizon(5)
+        for i in range(len(self.BEST)):
+            self.world.defineState(actor, 'Best_R' + str(i), float)
+            self.world.setState(actor, 'Best_R' + str(i), self.S_START_R[index][i])
+
+    set_student_actions()
 
 
 def set_tutor_actions(self):
 
 
 
-def set_student_actions(self):
+def set_student_actions(self,actor):
+    #Maintain Rewards
+    action = actor.addAction({'verb': 'No_Change'})
+    for i in range(len(self.BEST)):
+        tree = makeTree(incrementMatrix(stateKey(action['subject'], 'R'+str(i)), 0.))
+        self.world.setDynamics(stateKey(action['subject'], ''R'+str(i)'), action, tree)
+    for i in range(len(self.BEST)):
+        for val in [0.,0.25,0.5,1.,2.,4.]:
+            action = actor.addAction({'verb': 'Modify_R'+str(i)+'Accept_'+val})
+            tree = makeTree(incrementMatrix(stateKey(action['subject'], 'R'+str(i)), val))
+            self.world.setDynamics(stateKey(action['subject'], 'R'+str(i)), action, tree)
 
 
+            action = actor.addAction({'verb': 'Modify_R' + str(i) + 'Reject_' + val})
+            tree = makeTree(incrementMatrix(stateKey(action['subject'], 'R' + str(i)), -1.*val))
+            self.world.setDynamics(stateKey(action['subject'], 'R' + str(i)), action, tree)
 
 def run_without_visual(self):
     while not self.world.terminated():
         result = self.world.step()
         # self.world.explain(result, 2)
     return self.return_score()
-    self.evaluate_score()
 
+def return_score(self):
+    result = 0.0
+    for index in range(self.S_ACTORS):
+        for k in range(len(self.AGENT)):
+            student_r = int(self.world.getState('Actor' + str(index), 'R'+str(k)).domain()[0])
+            best_r = self.BEST[k]
+            score = 10.0 - abs(student_r - best_r)
+            result += score
+    result /= (self.S_ACTORS*len(self.AGENT))
+    return result
 
 def run():
     resultsFile = open("results.txt",'r')
@@ -106,11 +124,19 @@ def run():
     result = float(resultsFile.readline())
     agent = resultsFile.readline().split(",")
     agent = [float(a) for a in agent]
+    bestFile = open("best.txt",'r')
+    best = bestFile.readline().split(",")
+    best = [float(b) for b in best]
+    tutorFile = open("tutor.txt", 'r')
+    tutor = tutorFile.readline().split(",")
+    tutor = [float(t) for t in tutor]
     run = Scenario(
                 S_ACTORS= s_actors,
                 S_START_R= s_start_r,
                 RESULT = result,
-                AGENT= agent)
+                AGENT= agent,
+                BEST = best,
+                TUTOR = tutor)
     score = run.run_without_visual()
     print(score)
     return score
