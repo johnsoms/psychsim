@@ -28,7 +28,8 @@ class Scenario:
                  RESULT = 0.0,
                  AGENT=[[0.0]],
                  BEST=[0.0],
-                 TUTOR=[0.0]):
+                 TUTOR=[0.0],
+                 MAX = 4.0):
 
         self.S_ACTORS = S_ACTORS
         self.S_START_R = S_START_R
@@ -36,8 +37,11 @@ class Scenario:
         self.AGENT = AGENT
         self.BEST = BEST
         self.TUTOR = TUTOR
+        self.MAX = MAX
 
         self.world = World()
+        self.world.defineState(None, 'Max_R', float)
+        self.world.setState(None, 'Max_R', self.MAX)
         for i in range(len(self.BEST)):
             self.world.defineState(None,'Best_R'+str(i),float)
             self.world.setState(None,'Best_R'+str(i),self.BEST[i])
@@ -89,15 +93,26 @@ def set_student_actions(self,actor):
         tree = makeTree(incrementMatrix(stateKey(action['subject'], 'R'+str(i)), 0.))
         self.world.setDynamics(stateKey(action['subject'], ''R'+str(i)'), action, tree)
     for i in range(len(self.BEST)):
-        for val in [0.,0.25,0.5,1.,2.,4.]:
+        for val in [0.25,0.5,1.,2.,4.]:
             action = actor.addAction({'verb': 'Modify_R'+str(i)+'Accept_'+val})
             tree = makeTree(incrementMatrix(stateKey(action['subject'], 'R'+str(i)), val))
             self.world.setDynamics(stateKey(action['subject'], 'R'+str(i)), action, tree)
 
+            dict = {'if': differenceRow(stateKey(actor.name, 'R'+str(i)),stateKey(None, 'Max_R'),val),
+                    True:True,
+                    False:False}
+            tree = makeTree(dict)
+            actor.setLegal(action, tree)
 
             action = actor.addAction({'verb': 'Modify_R' + str(i) + 'Reject_' + val})
             tree = makeTree(incrementMatrix(stateKey(action['subject'], 'R' + str(i)), -1.*val))
             self.world.setDynamics(stateKey(action['subject'], 'R' + str(i)), action, tree)
+
+            dict = {'if': differenceRow(stateKey(actor.name, 'R' + str(i)), "0.0", val),
+                    True: True,
+                    False: False}
+            tree = makeTree(dict)
+            actor.setLegal(action, tree)
 
 def run_without_visual(self):
     while not self.world.terminated():
@@ -127,6 +142,7 @@ def run():
     bestFile = open("best.txt",'r')
     best = bestFile.readline().split(",")
     best = [float(b) for b in best]
+    max = float(bestFile.readline().split(","))
     tutorFile = open("tutor.txt", 'r')
     tutor = tutorFile.readline().split(",")
     tutor = [float(t) for t in tutor]
@@ -136,7 +152,8 @@ def run():
                 RESULT = result,
                 AGENT= agent,
                 BEST = best,
-                TUTOR = tutor)
+                TUTOR = tutor,
+                MAX = max_r)
     score = run.run_without_visual()
     print(score)
     return score
