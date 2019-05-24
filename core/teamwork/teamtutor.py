@@ -11,6 +11,7 @@ from psychsim.pwl import *
 from psychsim.action import *
 from psychsim.world import *
 from psychsim.agent import *
+from teamwork import *
 import pyglet
 from pyglet.window import key
 from threading import Thread
@@ -21,18 +22,18 @@ import copy
 
 
 
-class Scenario:
+class Tutoring:
     def __init__(self,
                  S_ACTORS=0,
                  S_START_R=[[0.0]],
-                 RESULT = 0.0,
+                 S_TRUST_T=[[0.0]],
+                 S_TRUST_S=[[0.0]],
                  BEST=[[0.0]],
                  TUTOR=[0.0],
                  MAX = 4.0):
 
         self.S_ACTORS = S_ACTORS
         self.S_START_R = S_START_R
-        self.RESULT = RESULT
         self.BEST = BEST
         self.TUTOR = TUTOR
         self.MAX = MAX
@@ -40,10 +41,14 @@ class Scenario:
         self.world = World()
         self.world.defineState(None, 'Max_R', float)
         self.world.setState(None, 'Max_R', self.MAX)
+        self.world.defineState(None, 'Last_Result', float)
+        self.world.setState(None, 'Last_Result', 0.)
+        self.world.addTermination(makeTree({'if': thresholdRow(stateKey(None, 'Last_Result'), 10.),
+                                            True: True, False: False}))
         for i in range(len(self.BEST)):
             for j in range(len(self.BEST[i])):
-            self.world.defineState(None,'Best_R'+str(j)+"_"+str(i),float)
-            self.world.setState(None,'Best_R'+str(j)+"_"+str(i),self.BEST[i])
+                self.world.defineState(None,'Best_R'+str(j)+"_"+str(i),float)
+                self.world.setState(None,'Best_R'+str(j)+"_"+str(i),self.BEST[i])
 
         self.create_tutor_agent()
 
@@ -82,17 +87,73 @@ def create_student_agents(self):
             self.world.defineState(actor, 'Suggest_R' + str(i), float)
             self.world.setState(actor, 'Suggest_R' + str(i), self.S_START_R[index][i])
 
-    # TODO: Add Student Rewards for changing strategies in response to tutoring
-        student_tutor_trust = calculate_trust_tutor(actor)
+        student_tutor_trust = self.S_TRUST_T[index]
         key = world.defineRelation(actor.name, 'Tutor', 'trusts')
         world.setFeature(key, student_tutor_trust)
 
-        student_self_trust = calculate_trust_self(actor)
-        key = world.defineState(actor.name, 'Self-Trust', float)
+        student_self_trust = self.S_TRUST_S[index][index]
+        world.defineState(actor.name, 'Self-Trust', float)
         world.setState(actor.name, 'Self-Trust', student_self_trust)
+        others = [str(k) for k in range(self.S_ACTORS)]
+        others.remove([str(index)])
+        student_student_trust = {s:0.0 for s in others}
+        for j in range(len(self.BEST[0])):
+            actor.setReward(minimizeDifference(stateKey(actor.name, 'R' + str(j)),
+                                               stateKey(actor.name, "R" + str(j))),
+                            student_self_trust)
+            for s in others:
+                student_student_trust[s] = self.S_TRUST_S[index][int(s)]
+                key = world.defineRelation(actor.name, 'Actor'+s, 'trusts')
+                world.setFeature(key, student_student_trust[s])
+                actor.setReward(minimizeDifference(stateKey(actor.name, 'R' + str(j)),
+                                                   stateKey('Actor' + s, "R" + str(j))),
+                                student_student_trust[s])
+            for i in range(len(self.BEST)):
+                actor.setReward(minimizeDifference(stateKey(actor.name, 'R' + str(j)),
+                                                   stateKey(None, "Suggest_R" + str(j) + "_" + str(i))), student_tutor_trust)
 
 
         set_student_actions(actor)
+
+
+def update_student_agents(self):
+    for index in range(self.S_ACTORS):
+        actor = Agent('Student'+str(index))
+
+        student_tutor_trust = self.calculate_trust_tutor()
+        key = binaryKey(actor.name, 'Tutor', 'trusts')
+        world.setFeature(key, student_tutor_trust)
+
+        student_self_trust = self.calculate_trust_self()
+        world.setState(actor.name, 'Self-Trust', student_self_trust)
+        others = [str(k) for k in range(self.S_ACTORS)]
+        others.remove([str(index)])
+        student_student_trust = {s:0.0 for s in others}
+        for j in range(len(self.BEST[0])):
+            actor.setReward(minimizeDifference(stateKey(actor.name, 'R' + str(j)),
+                                               stateKey(actor.name, "R" + str(j))),
+                            student_self_trust)
+            for s in others:
+                student_student_trust[s] = self.calculate_trust_other(int(s))
+                key = world.defineRelation(actor.name, 'Actor'+s, 'trusts')
+                world.setFeature(key, student_student_trust[s])
+                actor.setReward(minimizeDifference(stateKey(actor.name, 'R' + str(j)),
+                                                   stateKey('Actor' + s, "R" + str(j))),
+                                student_student_trust[s])
+            for i in range(len(self.BEST)):
+                actor.setReward(minimizeDifference(stateKey(actor.name, 'R' + str(j)),
+                                                   stateKey(None, "Suggest_R" + str(j) + "_" + str(i))), student_tutor_trust)
+
+
+def calculate_trust_tutor(self):
+
+
+
+def calculate_trust_self(self):
+
+
+
+def calculate_trust_other(self,index):
 
 
 def set_tutor_actions(self, actor):
@@ -155,10 +216,66 @@ def set_student_actions(self, actor):
             actor.setLegal(action, tree)
 
 def run_without_visual(self):
+    num_runs = 0
+    last_run = Scenario(
+        MAP_SIZE_X=7,
+        MAP_SIZE_Y=7,
+        F_ACTORS=3,
+        F_START_LOC=[str(random.randint(0, 6)) + "," + str(random.randint(0, 6)),
+                     str(random.randint(0, 6)) + "," + str(random.randint(0, 6)),
+                     str(random.randint(0, 6)) + "," + str(random.randint(0, 6))],
+        F_GOAL_LOC=["5,5", "5,5", "5,5"],
+        F_ENERGY=[10.0],
+        E_ACTORS=3,
+        E_START_LOC=["5,4", "4,5", "6,5"],
+        E_PATROL_RANGE=5,
+        # D_ACTORS=1,
+        # D_START_LOC=["2,3"],
+        # S_ACTORS=1,
+        # S_ENERGY=[10.0],
+        # S_START_LOC=["1,4"],
+        # BASE=[b1, b2],
+        # DISTRACTOR=[h1, h2],
+        # SUPPLIER=[d1, d2],
+        ENEMY=[0.7, 0.7, -1.0],
+        AGENT=self.S_START_R
+    )
+    game_result = last_run.run_without_visual()
+    self.world.setState(None, 'Last_Result', game_result)
+    self.update_student_agents()
+
     while not self.world.terminated():
         result = self.world.step()
+        num_runs+=1
         # self.world.explain(result, 2)
-    return self.return_score()
+        score = self.return_score()
+        students = [[int(self.world.getState('Actor'+str(i), 'R' + str(j)).domain()[0]) for j in range(len(self.BEST[0]))] for i in range(self.S_ACTORS)]
+        last_run = Scenario(
+            MAP_SIZE_X=7,
+            MAP_SIZE_Y=7,
+            F_ACTORS=3,
+            F_START_LOC=[str(random.randint(0, 6)) + "," + str(random.randint(0, 6)),
+                         str(random.randint(0, 6)) + "," + str(random.randint(0, 6)),
+                         str(random.randint(0, 6)) + "," + str(random.randint(0, 6))],
+            F_GOAL_LOC=["5,5", "5,5", "5,5"],
+            F_ENERGY=[10.0],
+            E_ACTORS=3,
+            E_START_LOC=["5,4", "4,5", "6,5"],
+            E_PATROL_RANGE=5,
+            # D_ACTORS=1,
+            # D_START_LOC=["2,3"],
+            # S_ACTORS=1,
+            # S_ENERGY=[10.0],
+            # S_START_LOC=["1,4"],
+            # BASE=[b1, b2],
+            # DISTRACTOR=[h1, h2],
+            # SUPPLIER=[d1, d2],
+            ENEMY=[0.7, 0.7, -1.0],
+            AGENT=[students[i] for i in range(self.S_ACTORS)]
+        )
+        game_result = last_run.run_without_visual()
+        self.world.setState(None, 'Last_Result', game_result)
+        self.update_student_agents()
 
 def return_score(self):
     result = 0.0
@@ -172,26 +289,15 @@ def return_score(self):
     return result
 
 def run():
-    resultsFile = open("results.txt",'r')
-    s_actors = int(resultsFile.readline())
-    s_start_r = resultsFile.readline().split(",")
-    s_start_r = [float(s) for s in s_start_r]
-    result = float(resultsFile.readline())
-    bestFile = open("best.txt",'r')
-    best = bestFile.readline().split(",")
-    best = [float(b) for b in best]
-    max_r = float(bestFile.readline().split(","))
-    tutorFile = open("tutor.txt", 'r')
-    tutor = tutorFile.readline().split(",")
-    tutor = [float(t) for t in tutor]
-    run = Scenario(
-                S_ACTORS= s_actors,
-                S_START_R= s_start_r,
-                RESULT = result,
-                BEST = best,
-                TUTOR = tutor,
-                MAX = max_r)
-    score = run.run_without_visual()
+    learn = Tutoring(
+                S_ACTORS=3,
+                S_START_R=[[1.0, 1.0, -1.0],[1.0, 1.0, -1.0],[1.0, 1.0, -1.0]],
+                S_TRUST_T=[1.0,1.0,1.0],
+                S_TRUST_S=[[1.0,1.0,1.0,1.0],[1.0,1.0,1.0,1.0],[1.0,1.0,1.0,1.0]],
+                BEST=[[1.,1.,-1.],[1.,1.,-1.],[1.,1.,-1.]],
+                TUTOR=[1.0,1.0,1.0],
+                MAX=4.0)
+    score = learn.run_without_visual()
     print(score)
     return score
 

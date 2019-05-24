@@ -39,7 +39,7 @@ class Scenario:
                  # DISTRACTOR=[0.0, 0.0],
                  # SUPPLIER=[0.0, 0.0],
                  ENEMY=[0.0, 0.0, 0.0],
-                 AGENT=[0.0, 0.0, 0.0]):
+                 AGENT=[[0.0, 0.0, 0.0]]):
 
         self.MAP_SIZE_X = MAP_SIZE_X
         self.MAP_SIZE_Y = MAP_SIZE_Y
@@ -216,10 +216,10 @@ class Scenario:
 
             # Positive reward for going towards goal
             actor.setReward(minimizeDifference(stateKey(actor.name, 'x'), stateKey(actor.name, 'goal_x')),
-                            self.AGENT[0])
+                            self.AGENT[index][0])
             actor.setReward(minimizeDifference(stateKey(actor.name, 'y'), stateKey(actor.name, 'goal_y')),
-                            self.AGENT[0])
-            actor.setReward(achieveFeatureValue(stateKey(actor.name, 'health'),'0'), self.AGENT[2])
+                            self.AGENT[index][0])
+            actor.setReward(achieveFeatureValue(stateKey(actor.name, 'health'),'0'), self.AGENT[index][2])
             # Negative reward for being eliminated
             actors.append(actor)
             enemy = 'Enemy' + str(index)
@@ -235,7 +235,7 @@ class Scenario:
             # Reward for attacking enemy
             for index2 in range(0, self.E_ACTORS):
                 enemy = 'Enemy' + str(index2)
-                actor.setReward(minimizeFeature(stateKey(enemy, 'health')), self.AGENT[1])
+                actor.setReward(minimizeFeature(stateKey(enemy, 'health')), self.AGENT[index][1])
             self.set_friendly_actions(actor)
 
             # Terminate if agent reaches goal
@@ -1907,7 +1907,7 @@ def run(genome,visual):
         # DISTRACTOR=[h1, h2],
         # SUPPLIER=[d1, d2],
         ENEMY=[0.7, 0.7, -1.0],
-        AGENT=[0.7, 0.3, -5.0])
+        AGENT=[[1.0, 1.0, -1.0],[1.0, 1.0, -1.0],[1.0, 1.0, -1.0]])
     score = None
     if visual:
         score = run.run_with_visual()
