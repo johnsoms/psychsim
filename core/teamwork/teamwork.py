@@ -1711,8 +1711,9 @@ class Scenario:
             file.write("Soldier" + str(index) + ": " + str(total))
 
     def return_score(self):
-        max_distance = self.MAP_SIZE_X + self.MAP_SIZE_Y
+        # max_distance = self.MAP_SIZE_X + self.MAP_SIZE_Y
         win = 0.0
+        perform = [0.0 for i in range(self.F_ACTORS)]
         for index in range(0,self.F_ACTORS):
             soldier_health = int(self.world.getState('Actor' + str(index), 'health').domain()[0])
             ending_x = int(self.world.getState('Actor' + str(index), 'x').domain()[0])
@@ -1721,6 +1722,9 @@ class Scenario:
                     self.f_get_goal_y(0) - ending_y)
             if soldier_goal_distance == 0 and soldier_health > 0:
                 win = 1.0
+                perform[index] = 1.0
+            elif soldier_health == 0:
+                perform[index] = -1.0
         # soldier_x = int(self.world.getState('Actor' + str(0), 'x').domain()[0])
         # soldier_y = int(self.world.getState('Actor' + str(0), 'y').domain()[0])
         # enemy_x = int(self.world.getState('Enemy' + str(0), 'x').domain()[0])
@@ -1731,14 +1735,14 @@ class Scenario:
         # helicopter_score = int(self.world.getState('Distractor'+str(0), 'cost').domain()[0])
         #
         # overall = soldier_enemy_distance - soldier_goal_distance + 20 - helicopter_score
-        return win
+        return win, perform
 
     def run_without_visual(self):
         while not self.world.terminated():
             result = self.world.step()
             #self.world.explain(result, 2)
         return self.return_score()
-        self.evaluate_score()
+        # self.evaluate_score()
 
     def run_with_visual(self):
         pyglet.resource.path = ['../Resources/teamwork']

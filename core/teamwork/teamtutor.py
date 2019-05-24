@@ -156,6 +156,7 @@ def calculate_trust_self(self):
 def calculate_trust_other(self,index):
 
 
+
 def set_tutor_actions(self, actor):
     for index in range(self.S_ACTORS):
         action = actor.addAction({'verb': 'No_Tutor_Actor'+str(index)})
@@ -240,9 +241,14 @@ def run_without_visual(self):
         ENEMY=[0.7, 0.7, -1.0],
         AGENT=self.S_START_R
     )
-    game_result = last_run.run_without_visual()
+    game_result = 0.
+    indv_result = [0. for i in range(self.S_ACTORS)]
+    for i in range(10):
+        win = last_run.run_without_visual()
+        game_result += win[0]
+        indv_result += win[1]
     self.world.setState(None, 'Last_Result', game_result)
-    self.update_student_agents()
+    self.update_student_agents(game_result, indv_result)
 
     while not self.world.terminated():
         result = self.world.step()
