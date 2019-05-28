@@ -120,10 +120,17 @@ def update_student_agents(self,game_result,indv_result,prev_actions):
     for index in range(self.S_ACTORS):
         actor = Agent('Student'+str(index))
         prev_action = None
-        for (name,action) in prev_actions:
+        tutor_action = None
+        other_actions = []
+        for (name,action,target) in prev_actions:
+            if name == "Tutor":
+                tutor_action = (action,target)
             if name == "Student"+str(index):
                 prev_action = action
-        student_tutor_trust = self.calculate_trust_tutor(index,game_result,indv_result,prev_action)
+                other_actions.append(None)
+            else:
+                other_actions.append(action)
+        student_tutor_trust = self.calculate_trust_tutor(index,game_result,indv_result,prev_action,tutor_action)
         key = binaryKey(actor.name, 'Tutor', 'trusts')
         world.setFeature(key, student_tutor_trust)
 
@@ -137,7 +144,7 @@ def update_student_agents(self,game_result,indv_result,prev_actions):
                                                stateKey(actor.name, "R" + str(j))),
                             student_self_trust)
             for s in others:
-                student_student_trust[s] = self.calculate_trust_other(int(s),index,game_result,indv_result,prev_action)
+                student_student_trust[s] = self.calculate_trust_other(int(s),game_result,indv_result,other_actions[int(s)],tutor_action)
                 key = world.defineRelation(actor.name, 'Actor'+s, 'trusts')
                 world.setFeature(key, student_student_trust[s])
                 actor.setReward(minimizeDifference(stateKey(actor.name, 'R' + str(j)),
@@ -148,84 +155,74 @@ def update_student_agents(self,game_result,indv_result,prev_actions):
                                                    stateKey(None, "Suggest_R" + str(j) + "_" + str(i))), student_tutor_trust)
 
 
-def calculate_trust_tutor(self,index,game_result,indv_result,prev_actions):
-    trust = 0.
-    if game_result == 1.:
-        if indv_result[index] == 1.:
+def calculate_trust_tutor(self,index,game_result,indv_result,prev_action,tutor_action):
+    modifier = -1.
+    if "Accept" in prev_action:
+        modifier = 1.
+    s_val = 0.
 
-        elif indv_result[index] == 0.:
+    nums = [int(s) for s in prev_action.split() if s.isdigit()]
+    for i in range(len(nums)):
+        s_val+=(float(nums[i])/(10.*i))*modifier
 
-        else:
+    modifier = -1.
+    if "Increase" in tutor_action:
+        modifier = 1.
+    t_val = 0.
+    if tutor_action[1] == 'Student'+str(index):
+        nums = [int(s) for s in tutor_action[0].split() if s.isdigit()]
+        for i in range(len(nums)):
+            t_val += (float(nums[i]) / (10. * i)) * modifier
+    factor = 0.1
+    trust = (1-factor)*abs(game_result-abs((t_val - s_val)/8.0))+factor*abs(indv_result[index]-abs((t_val - s_val)/8.0))
+    return 2.0*trust-1.0
 
-    elif game_result==0.:
-        if indv_result[index] == 1.:
+def calculate_trust_self(self,index,game_result,indv_result,prev_action):
+    s_val = 0.
 
-        elif indv_result[index] == 0.:
+    nums = [int(s) for s in prev_action.split() if s.isdigit()]
+    for i in range(len(nums)):
+        s_val += (float(nums[i]) / (10. * i))
 
-        else:
-    else:
-        if indv_result[index] == 1.:
-
-        elif indv_result[index] == 0.:
-
-        else:
-
-def calculate_trust_self(self,index,game_result,indv_result,prev_actions):
-    trust = 0.
-    if game_result == 1.:
-        if indv_result[index] == 1.:
-
-        elif indv_result[index] == 0.:
-
-        else:
-
-    elif game_result == 0.:
-        if indv_result[index] == 1.:
-
-        elif indv_result[index] == 0.:
-
-        else:
-    else:
-        if indv_result[index] == 1.:
-
-        elif indv_result[index] == 0.:
-
-        else:
+    factor = 0.1
+    trust = (1 - factor) * ((game_result - (s_val / 4.0))+1.0)/2.0 + factor * ((
+        indv_result[index] - (s_val / 4.0))+2.0)/3.0
+    return 2.0*trust-1.0
 
 
-def calculate_trust_other(self,other,index,game_result,indv_result,prev_actions):
-    trust = 0.
-    if game_result == 1.:
-        if indv_result[index] == 1.:
+def calculate_trust_other(self,other,game_result,indv_result,other_action,tutor_action):
+    modifier = -1.
+    if "Accept" in other_action:
+        modifier = 1.
+    s_val = 0.
 
-        elif indv_result[index] == 0.:
+    nums = [int(s) for s in other_action.split() if s.isdigit()]
+    for i in range(len(nums)):
+        s_val += (float(nums[i]) / (10. * i)) * modifier
 
-        else:
-
-    elif game_result == 0.:
-        if indv_result[index] == 1.:
-
-        elif indv_result[index] == 0.:
-
-        else:
-    else:
-        if indv_result[index] == 1.:
-
-        elif indv_result[index] == 0.:
-
-        else:
-
+    modifier = -1.
+    if "Increase" in tutor_action:
+        modifier = 1.
+    t_val = 0.
+    if tutor_action[1] == 'Student' + str(other):
+        nums = [int(s) for s in tutor_action[0].split() if s.isdigit()]
+        for i in range(len(nums)):
+            t_val += (float(nums[i]) / (10. * i)) * modifier
+    factor = 0.5
+    trust = (1 - factor) * abs(game_result - abs((t_val - s_val) / 8.0)) + factor * ((
+        indv_result[other] - abs((t_val - s_val) / 8.0))-2.0)/3.0
+    return 2.0*trust-1.0
 
 def set_tutor_actions(self, actor):
     for index in range(self.S_ACTORS):
-        action = actor.addAction({'verb': 'No_Tutor_Actor'+str(index)})
+        action = actor.addAction({'verb': 'No_Tutor','object':'Actor'+str(index)})
         for i in range(len(self.BEST[0])):
             tree = makeTree(incrementMatrix(stateKey('Actor'+str(index), 'Suggest_R' + str(i)), 0.))
             self.world.setDynamics(stateKey('Actor'+str(index), 'Suggest_R'+str(i)), action, tree)
         # Modify Rewards by either accepting or rebelling against instruction
         for i in range(len(self.BEST[0])):
             for val in [0.25,0.5,0.75,1.,1.25,1.5,1.75,2.,2.25,2.5,2.75,3,3.25,3.5,3.75,4.]:
-                action = actor.addAction({'verb': 'Suggest_R' + str(i) + 'Increase_' + val})
+                action = actor.addAction({'verb': 'Suggest_R' + str(i) + 'Increase_' + val,'object':'Actor'+str(index)})
                 tree = makeTree(incrementMatrix(stateKey('Actor'+str(index), 'Suggest_R' + str(i)), val))
                 self.world.setDynamics(stateKey('Actor'+str(index), 'Suggest_R' + str(i)), action, tree)
 
@@ -235,7 +232,7 @@ def set_tutor_actions(self, actor):
                 tree = makeTree(dict)
                 actor.setLegal(action, tree)
 
-                action = actor.addAction({'verb': 'Suggest_R' + str(i) + 'Decrease_' + val})
+                action = actor.addAction({'verb': 'Suggest_R' + str(i) + 'Decrease_' + val,'object':'Actor'+str(index)})
                 tree = makeTree(incrementMatrix(stateKey('Actor'+str(index), 'Suggest_R' + str(i)), -1. * val))
                 self.world.setDynamics(stateKey('Actor'+str(index), 'Suggest_R' + str(i)), action, tree)
 
@@ -249,11 +246,11 @@ def set_tutor_actions(self, actor):
 def set_student_actions(self, actor):
     # Maintain Rewards
     action = actor.addAction({'verb': 'No_Change'})
-    for i in range(len(self.BEST)):
+    for i in range(len(self.BEST[0])):
         tree = makeTree(incrementMatrix(stateKey(action['subject'], 'R'+str(i)), 0.))
         self.world.setDynamics(stateKey(action['subject'], 'R'+str(i)), action, tree)
     # Modify Rewards by either accepting or rebelling against instruction
-    for i in range(len(self.BEST)):
+    for i in range(len(self.BEST[0])):
         for val in [0.25,0.5,0.75,1.,1.25,1.5,1.75,2.,2.25,2.5,2.75,3,3.25,3.5,3.75,4.]:
             action = actor.addAction({'verb': 'Modify_R'+str(i)+'Accept_'+val})
             tree = makeTree(incrementMatrix(stateKey(action['subject'], 'R'+str(i)), val))
@@ -316,7 +313,10 @@ def run_without_visual(self):
             outcome = result[i]
             for name, action in outcome['actions']:
                 act = action['verb']
-                prev_actions.append((name,act))
+                target = None
+                if action.has_key('object'):
+                    target = action['object']
+                prev_actions.append((name,act,target))
         num_runs+=1
         # self.world.explain(result, 2)
         score = self.return_score()
