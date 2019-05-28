@@ -122,14 +122,14 @@ def update_student_agents(self,game_result,indv_result,prev_actions):
         prev_action = None
         tutor_action = None
         other_actions = []
-        for (name,action,target) in prev_actions:
+        for (name,action,target,amount) in prev_actions:
             if name == "Tutor":
-                tutor_action = (action,target)
+                tutor_action = (action,target,amount)
             if name == "Student"+str(index):
-                prev_action = action
+                prev_action = (action,amount)
                 other_actions.append(None)
             else:
-                other_actions.append(action)
+                other_actions.append((action,amount))
         student_tutor_trust = self.calculate_trust_tutor(index,game_result,indv_result,prev_action,tutor_action)
         key = binaryKey(actor.name, 'Tutor', 'trusts')
         world.setFeature(key, student_tutor_trust)
@@ -222,7 +222,7 @@ def set_tutor_actions(self, actor):
         # Modify Rewards by either accepting or rebelling against instruction
         for i in range(len(self.BEST[0])):
             for val in [0.25,0.5,0.75,1.,1.25,1.5,1.75,2.,2.25,2.5,2.75,3,3.25,3.5,3.75,4.]:
-                action = actor.addAction({'verb': 'Suggest_R' + str(i) + 'Increase_' + val,'object':'Actor'+str(index)})
+                action = actor.addAction({'verb': 'Suggest_R' + str(i) + '_Increase','object':'Actor'+str(index),'amount':val})
                 tree = makeTree(incrementMatrix(stateKey('Actor'+str(index), 'Suggest_R' + str(i)), val))
                 self.world.setDynamics(stateKey('Actor'+str(index), 'Suggest_R' + str(i)), action, tree)
 
@@ -232,7 +232,7 @@ def set_tutor_actions(self, actor):
                 tree = makeTree(dict)
                 actor.setLegal(action, tree)
 
-                action = actor.addAction({'verb': 'Suggest_R' + str(i) + 'Decrease_' + val,'object':'Actor'+str(index)})
+                action = actor.addAction({'verb': 'Suggest_R' + str(i) + '_Decrease','object':'Actor'+str(index),'amount':val})
                 tree = makeTree(incrementMatrix(stateKey('Actor'+str(index), 'Suggest_R' + str(i)), -1. * val))
                 self.world.setDynamics(stateKey('Actor'+str(index), 'Suggest_R' + str(i)), action, tree)
 
@@ -252,7 +252,7 @@ def set_student_actions(self, actor):
     # Modify Rewards by either accepting or rebelling against instruction
     for i in range(len(self.BEST[0])):
         for val in [0.25,0.5,0.75,1.,1.25,1.5,1.75,2.,2.25,2.5,2.75,3,3.25,3.5,3.75,4.]:
-            action = actor.addAction({'verb': 'Modify_R'+str(i)+'Accept_'+val})
+            action = actor.addAction({'verb': 'Modify_R'+str(i)+'_Accept','amount':val})
             tree = makeTree(incrementMatrix(stateKey(action['subject'], 'R'+str(i)), val))
             self.world.setDynamics(stateKey(action['subject'], 'R'+str(i)), action, tree)
 
@@ -262,7 +262,7 @@ def set_student_actions(self, actor):
             tree = makeTree(dict)
             actor.setLegal(action, tree)
 
-            action = actor.addAction({'verb': 'Modify_R' + str(i) + 'Reject_' + val})
+            action = actor.addAction({'verb': 'Modify_R' + str(i) + '_Reject','amount':val})
             tree = makeTree(incrementMatrix(stateKey(action['subject'], 'R' + str(i)), -1.*val))
             self.world.setDynamics(stateKey(action['subject'], 'R' + str(i)), action, tree)
 
