@@ -116,15 +116,18 @@ def create_student_agents(self):
         set_student_actions(actor)
 
 
-def update_student_agents(self):
+def update_student_agents(self,game_result,indv_result,prev_actions):
     for index in range(self.S_ACTORS):
         actor = Agent('Student'+str(index))
-
-        student_tutor_trust = self.calculate_trust_tutor()
+        prev_action = None
+        for (name,action) in prev_actions:
+            if name == "Student"+str(index):
+                prev_action = action
+        student_tutor_trust = self.calculate_trust_tutor(index,game_result,indv_result,prev_action)
         key = binaryKey(actor.name, 'Tutor', 'trusts')
         world.setFeature(key, student_tutor_trust)
 
-        student_self_trust = self.calculate_trust_self()
+        student_self_trust = self.calculate_trust_self(index,game_result,indv_result,prev_action)
         world.setState(actor.name, 'Self-Trust', student_self_trust)
         others = [str(k) for k in range(self.S_ACTORS)]
         others.remove([str(index)])
@@ -134,7 +137,7 @@ def update_student_agents(self):
                                                stateKey(actor.name, "R" + str(j))),
                             student_self_trust)
             for s in others:
-                student_student_trust[s] = self.calculate_trust_other(int(s))
+                student_student_trust[s] = self.calculate_trust_other(int(s),index,game_result,indv_result,prev_action)
                 key = world.defineRelation(actor.name, 'Actor'+s, 'trusts')
                 world.setFeature(key, student_student_trust[s])
                 actor.setReward(minimizeDifference(stateKey(actor.name, 'R' + str(j)),
@@ -145,16 +148,72 @@ def update_student_agents(self):
                                                    stateKey(None, "Suggest_R" + str(j) + "_" + str(i))), student_tutor_trust)
 
 
-def calculate_trust_tutor(self):
+def calculate_trust_tutor(self,index,game_result,indv_result,prev_actions):
+    trust = 0.
+    if game_result == 1.:
+        if indv_result[index] == 1.:
+
+        elif indv_result[index] == 0.:
+
+        else:
+
+    elif game_result==0.:
+        if indv_result[index] == 1.:
+
+        elif indv_result[index] == 0.:
+
+        else:
+    else:
+        if indv_result[index] == 1.:
+
+        elif indv_result[index] == 0.:
+
+        else:
+
+def calculate_trust_self(self,index,game_result,indv_result,prev_actions):
+    trust = 0.
+    if game_result == 1.:
+        if indv_result[index] == 1.:
+
+        elif indv_result[index] == 0.:
+
+        else:
+
+    elif game_result == 0.:
+        if indv_result[index] == 1.:
+
+        elif indv_result[index] == 0.:
+
+        else:
+    else:
+        if indv_result[index] == 1.:
+
+        elif indv_result[index] == 0.:
+
+        else:
 
 
+def calculate_trust_other(self,other,index,game_result,indv_result,prev_actions):
+    trust = 0.
+    if game_result == 1.:
+        if indv_result[index] == 1.:
 
-def calculate_trust_self(self):
+        elif indv_result[index] == 0.:
 
+        else:
 
+    elif game_result == 0.:
+        if indv_result[index] == 1.:
 
-def calculate_trust_other(self,index):
+        elif indv_result[index] == 0.:
 
+        else:
+    else:
+        if indv_result[index] == 1.:
+
+        elif indv_result[index] == 0.:
+
+        else:
 
 
 def set_tutor_actions(self, actor):
@@ -248,10 +307,16 @@ def run_without_visual(self):
         game_result += win[0]
         indv_result += win[1]
     self.world.setState(None, 'Last_Result', game_result)
-    self.update_student_agents(game_result, indv_result)
+    self.update_student_agents(game_result, indv_result,[])
 
     while not self.world.terminated():
+        prev_actions = []
         result = self.world.step()
+        for i in range(self.S_ACTORS+1):
+            outcome = result[i]
+            for name, action in outcome['actions']:
+                act = action['verb']
+                prev_actions.append((name,act))
         num_runs+=1
         # self.world.explain(result, 2)
         score = self.return_score()
@@ -281,7 +346,7 @@ def run_without_visual(self):
         )
         game_result = last_run.run_without_visual()
         self.world.setState(None, 'Last_Result', game_result)
-        self.update_student_agents()
+        self.update_student_agents(game_result,indv_result,prev_actions)
 
 def return_score(self):
     result = 0.0

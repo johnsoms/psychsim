@@ -299,16 +299,12 @@ class Scenario:
                                            False: False},
                                    False: {}}},
                            False: {}}
-                print("CALLED1A")
                 edl.append(newdict)
         for index2 in range(self.F_ACTORS):
-            print(index2)
-            print(self.F_ACTORS-1)
             if 'Actor'+str(index2) == actor.name:
                 continue
             elif index2 != (self.F_ACTORS-1):
                 if index2+1 == (self.F_ACTORS - 1) and 'Actor' + str(index2+1) == actor.name:
-                    print("END")
                     newdict = {'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x'), -1),
                                True: {
                                    'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x'),
@@ -322,7 +318,6 @@ class Scenario:
                                               True: True,
                                               False: False}}},
                                False: True}
-                    print("CALLED3D")
                     combined_dict = newdict
                     for dict2 in reversed(edl):
                         combined_dict = recursiveFillEmptyDicts(dict2, combined_dict)
@@ -339,10 +334,8 @@ class Scenario:
                                                False: False},
                                        False: {}}},
                                False: {}}
-                    print("CALLED2A")
                     edl.append(newdict)
             else:
-                print("END")
                 newdict = {'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x'), -1),
                            True: {
                                'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x'), 0),
@@ -354,12 +347,10 @@ class Scenario:
                                            False: False},
                                    False: True}},
                            False: True}
-                print("CALLED3A")
                 combined_dict = newdict
                 for dict2 in reversed(edl):
                     combined_dict = recursiveFillEmptyDicts(dict2, combined_dict)
                 dict = recursiveFillEmptyDicts(dict, combined_dict)
-                # print(dict)
         tree = makeTree(dict)
         actor.setLegal(action, tree)
 
@@ -407,14 +398,12 @@ class Scenario:
                                            True: {},
                                            False: False}}},
                            False: {}}
-                print("CALLED1B")
                 edl.append(newdict)
         for index2 in range(self.F_ACTORS):
             if 'Actor' + str(index2) == actor.name:
                 continue
             elif index2 != (self.F_ACTORS - 1):
                 if index2+1 == (self.F_ACTORS - 1) and 'Actor' + str(index2+1) == actor.name:
-                    print("END")
                     newdict = {'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x'), 0),
                                True: {
                                    'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x'),
@@ -428,7 +417,6 @@ class Scenario:
                                               True: True,
                                               False: False}}},
                                False: True}
-                    print("CALLED3D")
                     combined_dict = newdict
                     for dict2 in reversed(edl):
                         combined_dict = recursiveFillEmptyDicts(dict2, combined_dict)
@@ -445,10 +433,8 @@ class Scenario:
                                                True: {},
                                                False: False}}},
                                False: {}}
-                    print("CALLED2B")
                     edl.append(newdict)
             else:
-                print("END")
                 newdict = {'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x'), 0),
                            True: {
                                'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x'), 1),
@@ -460,7 +446,6 @@ class Scenario:
                                            True: True,
                                            False: False}}},
                            False: True}
-                print("CALLED3B")
                 combined_dict = newdict
                 for dict2 in reversed(edl):
                     combined_dict = recursiveFillEmptyDicts(dict2, combined_dict)
@@ -512,14 +497,12 @@ class Scenario:
                                            True: {},
                                            False: False}}},
                            False: {}}
-                print("CALLED1C")
                 edl.append(newdict)
         for index2 in range(self.F_ACTORS):
             if 'Actor' + str(index2) == actor.name:
                 continue
             elif index2 != (self.F_ACTORS - 1):
                 if index2+1 == (self.F_ACTORS - 1) and 'Actor' + str(index2+1) == actor.name:
-                    print("END")
                     newdict = {'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y'), -1),
                                True: {
                                    'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y'),
@@ -533,7 +516,6 @@ class Scenario:
                                               True: True,
                                               False: False}}},
                                False: True}
-                    print("CALLED3D")
                     combined_dict = newdict
                     for dict2 in reversed(edl):
                         combined_dict = recursiveFillEmptyDicts(dict2, combined_dict)
@@ -550,10 +532,10 @@ class Scenario:
                                                True: {},
                                                False: False}}},
                                False: {}}
-                    print("CALLED2C")
+                    
                     edl.append(newdict)
             else:
-                print("END")
+                
                 newdict = {'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y'), -1),
                            True: {
                                'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y'), 0),
@@ -565,7 +547,7 @@ class Scenario:
                                            True: True,
                                            False: False}}},
                            False: True}
-                print("CALLED3C")
+                
                 combined_dict = newdict
                 for dict2 in reversed(edl):
                     combined_dict = recursiveFillEmptyDicts(dict2, combined_dict)
@@ -617,14 +599,14 @@ class Scenario:
                                            True: {},
                                            False: False}}},
                            False: {}}
-                print("CALLED1D")
+                
                 edl.append(newdict)
         for index2 in range(self.F_ACTORS):
             if 'Actor' + str(index2) == actor.name:
                 continue
             elif index2 != (self.F_ACTORS - 1):
                 if index2+1 == (self.F_ACTORS - 1) and 'Actor' + str(index2+1) == actor.name:
-                    print("END")
+                    
                     newdict = {'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y'), 0),
                                True: {
                                    'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y'),
@@ -638,7 +620,7 @@ class Scenario:
                                               True: True,
                                               False: False}}},
                                False: True}
-                    print("CALLED3D")
+                    
                     combined_dict = newdict
                     for dict2 in reversed(edl):
                         combined_dict = recursiveFillEmptyDicts(dict2, combined_dict)
@@ -655,10 +637,10 @@ class Scenario:
                                                True: {},
                                                False: False}}},
                                False: {}}
-                    print("CALLED2D")
+                    
                     edl.append(newdict)
             else:
-                print("END")
+                
                 newdict = {'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y'), 0),
                            True: {
                                'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y'), 1),
@@ -670,7 +652,7 @@ class Scenario:
                                            True: True,
                                            False: False}}},
                            False: True}
-                print("CALLED3D")
+                
                 combined_dict = newdict
                 for dict2 in reversed(edl):
                     combined_dict = recursiveFillEmptyDicts(dict2, combined_dict)
@@ -1125,16 +1107,14 @@ class Scenario:
                                           False: False},
                                    False: {}}},
                            False: {}}
-                print("CALLED1A")
+                
                 edl.append(newdict)
         for index2 in range(self.E_ACTORS):
-            print(index2)
-            print(self.E_ACTORS - 1)
             if 'Enemy' + str(index2) == actor.name:
                 continue
             elif index2 != (self.E_ACTORS - 1):
                 if index2 + 1 == (self.E_ACTORS - 1) and 'Enemy' + str(index2 + 1) == actor.name:
-                    print("END")
+                    
                     newdict = {'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Enemy' + str(index2), 'x'), -1),
                                True: {
                                    'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Enemy' + str(index2), 'x'),
@@ -1148,7 +1128,7 @@ class Scenario:
                                               True: True,
                                               False: False}}},
                                False: True}
-                    print("CALLED3D")
+                    
                     combined_dict = newdict
                     for dict2 in reversed(edl):
                         combined_dict = recursiveFillEmptyDicts(dict2, combined_dict)
@@ -1167,10 +1147,10 @@ class Scenario:
                                               False: False},
                                        False: {}}},
                                False: {}}
-                    print("CALLED2A")
+                    
                     edl.append(newdict)
             else:
-                print("END")
+                
                 newdict = {'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Enemy' + str(index2), 'x'), -1),
                            True: {
                                'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Enemy' + str(index2), 'x'), 0),
@@ -1183,7 +1163,7 @@ class Scenario:
                                           False: False},
                                    False: True}},
                            False: True}
-                print("CALLED3A")
+                
                 combined_dict = newdict
                 for dict2 in reversed(edl):
                     combined_dict = recursiveFillEmptyDicts(dict2, combined_dict)
@@ -1236,16 +1216,14 @@ class Scenario:
                                           False: False},
                                    False: {}}},
                            False: {}}
-                print("CALLED1A")
+                
                 edl.append(newdict)
         for index2 in range(self.E_ACTORS):
-            print(index2)
-            print(self.E_ACTORS - 1)
             if 'Enemy' + str(index2) == actor.name:
                 continue
             elif index2 != (self.E_ACTORS - 1):
                 if index2 + 1 == (self.E_ACTORS - 1) and 'Enemy' + str(index2 + 1) == actor.name:
-                    print("END")
+                    
                     newdict = {'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Enemy' + str(index2), 'x'), 0),
                                True: {
                                    'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Enemy' + str(index2), 'x'),
@@ -1259,7 +1237,7 @@ class Scenario:
                                               True: True,
                                               False: False}}},
                                False: True}
-                    print("CALLED3D")
+                    
                     combined_dict = newdict
                     for dict2 in reversed(edl):
                         combined_dict = recursiveFillEmptyDicts(dict2, combined_dict)
@@ -1278,10 +1256,10 @@ class Scenario:
                                               False: False},
                                        False: {}}},
                                False: {}}
-                    print("CALLED2A")
+                    
                     edl.append(newdict)
             else:
-                print("END")
+                
                 newdict = {'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Enemy' + str(index2), 'x'), 0),
                            True: {
                                'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Enemy' + str(index2), 'x'), 1),
@@ -1294,7 +1272,7 @@ class Scenario:
                                           False: False},
                                    False: True}},
                            False: True}
-                print("CALLED3A")
+                
                 combined_dict = newdict
                 for dict2 in reversed(edl):
                     combined_dict = recursiveFillEmptyDicts(dict2, combined_dict)
@@ -1347,16 +1325,14 @@ class Scenario:
                                           False: False},
                                    False: {}}},
                            False: {}}
-                print("CALLED1A")
+                
                 edl.append(newdict)
         for index2 in range(self.E_ACTORS):
-            print(index2)
-            print(self.E_ACTORS - 1)
             if 'Enemy' + str(index2) == actor.name:
                 continue
             elif index2 != (self.E_ACTORS - 1):
                 if index2 + 1 == (self.E_ACTORS - 1) and 'Enemy' + str(index2 + 1) == actor.name:
-                    print("END")
+                    
                     newdict = {'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Enemy' + str(index2), 'y'), -1),
                                True: {
                                    'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Enemy' + str(index2), 'y'),
@@ -1370,7 +1346,7 @@ class Scenario:
                                               True: True,
                                               False: False}}},
                                False: True}
-                    print("CALLED3D")
+                    
                     combined_dict = newdict
                     for dict2 in reversed(edl):
                         combined_dict = recursiveFillEmptyDicts(dict2, combined_dict)
@@ -1389,10 +1365,10 @@ class Scenario:
                                               False: False},
                                        False: {}}},
                                False: {}}
-                    print("CALLED2A")
+                    
                     edl.append(newdict)
             else:
-                print("END")
+                
                 newdict = {'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Enemy' + str(index2), 'y'), -1),
                            True: {
                                'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Enemy' + str(index2), 'y'), 0),
@@ -1405,7 +1381,7 @@ class Scenario:
                                           False: False},
                                    False: True}},
                            False: True}
-                print("CALLED3A")
+                
                 combined_dict = newdict
                 for dict2 in reversed(edl):
                     combined_dict = recursiveFillEmptyDicts(dict2, combined_dict)
@@ -1458,16 +1434,14 @@ class Scenario:
                                           False: False},
                                    False: {}}},
                            False: {}}
-                print("CALLED1A")
+                
                 edl.append(newdict)
         for index2 in range(self.E_ACTORS):
-            print(index2)
-            print(self.E_ACTORS - 1)
             if 'Enemy' + str(index2) == actor.name:
                 continue
             elif index2 != (self.E_ACTORS - 1):
                 if index2 + 1 == (self.E_ACTORS - 1) and 'Enemy' + str(index2 + 1) == actor.name:
-                    print("END")
+                    
                     newdict = {'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Enemy' + str(index2), 'y'), 0),
                                True: {
                                    'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Enemy' + str(index2), 'y'),
@@ -1481,7 +1455,7 @@ class Scenario:
                                               True: True,
                                               False: False}}},
                                False: True}
-                    print("CALLED3D")
+                    
                     combined_dict = newdict
                     for dict2 in reversed(edl):
                         combined_dict = recursiveFillEmptyDicts(dict2, combined_dict)
@@ -1500,10 +1474,10 @@ class Scenario:
                                               False: False},
                                        False: {}}},
                                False: {}}
-                    print("CALLED2A")
+                    
                     edl.append(newdict)
             else:
-                print("END")
+                
                 newdict = {'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Enemy' + str(index2), 'y'), 0),
                            True: {
                                'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Enemy' + str(index2), 'y'), 1),
@@ -1516,7 +1490,7 @@ class Scenario:
                                           False: False},
                                    False: True}},
                            False: True}
-                print("CALLED3A")
+                
                 combined_dict = newdict
                 for dict2 in reversed(edl):
                     combined_dict = recursiveFillEmptyDicts(dict2, combined_dict)
@@ -1740,7 +1714,6 @@ class Scenario:
     def run_without_visual(self):
         while not self.world.terminated():
             result = self.world.step()
-            #self.world.explain(result, 2)
         return self.return_score()
         # self.evaluate_score()
 
@@ -1850,7 +1823,7 @@ class Scenario:
         def update(dt):
             if not self.paused:
                 result = self.world.step()
-                self.world.explain(result, 2)
+                # self.world.explain(result, 2)
                 if self.world.terminated():
                     self.evaluate_score()
                     window.close()
@@ -1932,15 +1905,11 @@ def recursiveFillEmptyDicts(dict, newdict):
     if type(dict) is bool:
         return dict
     for (key,value) in copydict.iteritems():
-        # print(dict[key])
         if type(value) is type(dict):
             if value == {}:
-                # print("EMPTY")
                 dict[key].update(newdict)
             else:
-                print('RECURSE')
                 dict[key] = recursiveFillEmptyDicts(dict[key],newdict)
-                print("OUT")
     return dict
 
 

@@ -30,11 +30,11 @@ for r2 in {0.25,0.5,1.0,2.0,4.0}:
                 # DISTRACTOR=[h1, h2],
                 # SUPPLIER=[d1, d2],
                 ENEMY=[0.7, 0.7, -1.0],
-                AGENT=[r1, r2, -1.0*r3])
+                AGENT=[[r1, r2, -1.0*r3] for i in range(3)])
 
-            total_score += run.run_without_visual()
-        path = os.getcwd()+"/rewardtrials/"
-        scorefile = open(path + str(r2) +"_"+ str(r3) + ".txt", "w")
-        scorefile.write(str(total_score))
-        scorefile.close()
+            total_score += run.run_without_visual()[0]
+        # path = os.getcwd()+"/rewardtrials/"
+        # scorefile = open(path + str(r2) +"_"+ str(r3) + ".txt", "w")
+        # scorefile.write(str(total_score))
+        # scorefile.close()
 
