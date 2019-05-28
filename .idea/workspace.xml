@@ -2,9 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="9665b86e-27a3-4217-9a69-ac30afe85257" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/core/teamwork/rewardanalysis.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/teamwork/rewardanalysis.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/core/teamwork/teamtutor.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/teamwork/teamtutor.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/teamwork/teamwork.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/teamwork/teamwork.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -17,8 +15,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/core/teamwork/teamtutor.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="651">
-              <caret line="215" column="13" selection-start-line="215" selection-start-column="13" selection-end-line="215" selection-end-column="13" />
+            <state relative-caret-position="4346">
+              <caret line="367" column="57" selection-start-line="367" selection-start-column="57" selection-end-line="367" selection-end-column="57" />
             </state>
           </provider>
         </entry>
@@ -220,8 +218,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/core/teamwork/teamtutor.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="651">
-          <caret line="215" column="13" selection-start-line="215" selection-start-column="13" selection-end-line="215" selection-end-column="13" />
+        <state relative-caret-position="4346">
+          <caret line="367" column="57" selection-start-line="367" selection-start-column="57" selection-end-line="367" selection-end-column="57" />
         </state>
       </provider>
     </entry>
