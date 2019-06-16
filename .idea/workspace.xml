@@ -4,7 +4,6 @@
     <list default="true" id="9665b86e-27a3-4217-9a69-ac30afe85257" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/core/teamwork/teamtutor.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/teamwork/teamtutor.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/externals/psychsim/pwl.py" beforeDir="false" afterPath="$PROJECT_DIR$/externals/psychsim/pwl.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -17,8 +16,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/core/teamwork/teamtutor.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="415">
-              <caret line="171" column="34" selection-start-line="171" selection-start-column="27" selection-end-line="171" selection-end-column="34" />
+            <state relative-caret-position="961">
+              <caret line="359" column="21" selection-start-line="62" selection-start-column="4" selection-end-line="359" selection-end-column="21" />
               <folding>
                 <element signature="e#346#393#0" expanded="true" />
               </folding>
@@ -165,7 +164,21 @@
       <option name="project" value="LOCAL" />
       <updated>1559085506241</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="&quot;Minor edits&quot;">
+      <created>1560723809931</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1560723809931</updated>
+    </task>
+    <task id="LOCAL-00006" summary="&quot;Actually runs now&quot;">
+      <created>1560723937909</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1560723937909</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -198,7 +211,9 @@
     <MESSAGE value="&quot;Added trust relationships and main simulation loop&quot;" />
     <MESSAGE value="&quot;Finished trust calculation functions&quot;" />
     <MESSAGE value="&quot;Started to rework actions to be more modular&quot;" />
-    <option name="LAST_COMMIT_MESSAGE" value="&quot;Started to rework actions to be more modular&quot;" />
+    <MESSAGE value="&quot;Minor edits&quot;" />
+    <MESSAGE value="&quot;Actually runs now&quot;" />
+    <option name="LAST_COMMIT_MESSAGE" value="&quot;Actually runs now&quot;" />
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/externals/psychsim/world.py">
@@ -248,8 +263,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/core/teamwork/teamtutor.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="415">
-          <caret line="171" column="34" selection-start-line="171" selection-start-column="27" selection-end-line="171" selection-end-column="34" />
+        <state relative-caret-position="961">
+          <caret line="359" column="21" selection-start-line="62" selection-start-column="4" selection-end-line="359" selection-end-column="21" />
           <folding>
             <element signature="e#346#393#0" expanded="true" />
           </folding>
