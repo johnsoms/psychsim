@@ -372,3 +372,5 @@ def run():
     print(score)
     return score
 
+
+run()
