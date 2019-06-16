@@ -71,7 +71,7 @@ def create_tutor_agent(self):
     for index in range(self.S_ACTORS):
         for i in range(len(self.BEST)):
             for j in range(len(self.BEST[0])):
-                actor.setReward(minimizeDifference(stateKey('Actor'+str(index),'R'+str(j)),stateKey(None,"Best_R"+str(j)+"_"+str(i))),self.TUTOR[i])
+                actor.setReward(minimizeDifference(stateKey('Student'+str(index),'R'+str(j)),stateKey(None,"Best_R"+str(j)+"_"+str(i))),self.TUTOR[i])
 
     self.set_tutor_actions(actor)
 
@@ -143,13 +143,13 @@ def update_student_agents(self,game_result,indv_result,prev_actions):
             actor.setReward(minimizeDifference(stateKey(actor.name, 'R' + str(j)),
                                                stateKey(actor.name, "R" + str(j))),
                             student_self_trust)
-            for s in others:
-                student_student_trust[s] = self.calculate_trust_other(int(s),game_result,indv_result,other_actions[int(s)],tutor_action)
-                key = world.defineRelation(actor.name, 'Actor'+s, 'trusts')
-                world.setFeature(key, student_student_trust[s])
-                actor.setReward(minimizeDifference(stateKey(actor.name, 'R' + str(j)),
-                                                   stateKey('Actor' + s, "R" + str(j))),
-                                student_student_trust[s])
+            # for s in others:
+            #     student_student_trust[s] = self.calculate_trust_other(int(s),game_result,indv_result,other_actions[int(s)],tutor_action)
+            #     key = world.defineRelation(actor.name, 'Student'+s, 'trusts')
+            #     world.setFeature(key, student_student_trust[s])
+            #     actor.setReward(minimizeDifference(stateKey(actor.name, 'R' + str(j)),
+            #                                        stateKey('Student' + s, "R" + str(j))),
+            #                     student_student_trust[s])
             for i in range(len(self.BEST)):
                 actor.setReward(minimizeDifference(stateKey(actor.name, 'R' + str(j)),
                                                    stateKey(None, "Suggest_R" + str(j) + "_" + str(i))), student_tutor_trust)

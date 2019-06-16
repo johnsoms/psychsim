@@ -88,8 +88,8 @@ class KeyedVector(dict):
                             result[col] = self[key]*other[key][col]
             return result
         else:
-            raise TypeError,'Unable to multiply %s by %s' % \
-                (self.__class__.__name__,other.__class__.__name__)
+            raise TypeError('Unable to multiply %s by %s' % \
+                (self.__class__.__name__,other.__class__.__name__))
 
     def __setitem__(self,key,value):
         self._string = None
@@ -372,8 +372,8 @@ class KeyedMatrix(dict):
                 except KeyError:
                     result[product] = other[vector]
         else:
-            raise TypeError,'Unable to multiply %s by %s' % \
-                (self.__class__.__name__,other.__class__.__name__)
+            raise TypeError('Unable to multiply %s by %s' % \
+                (self.__class__.__name__,other.__class__.__name__))
         return result
 
     def getKeysIn(self):
@@ -553,7 +553,7 @@ class MatrixDistribution(Distribution):
 
     def __mul__(self,other):
         if isinstance(other,Distribution):
-            raise NotImplementedError,'Unable to multiply two distributions.'
+            raise NotImplementedError('Unable to multiply two distributions.')
         else:
             result = {}
             for element in self.domain():
@@ -566,7 +566,7 @@ class MatrixDistribution(Distribution):
             elif isinstance(other,KeyedMatrix):
                 return self.__class__(result)
             else:
-                raise TypeError,'Unable to process multiplication by %s' % (other.__class__.__name__)
+                raise TypeError('Unable to process multiplication by %s' % (other.__class__.__name__))
 
     def element2xml(self,value):
         return value.__xml__().documentElement
@@ -606,7 +606,7 @@ class KeyedPlane:
             else:
                 return abs(total-self.threshold) < self.vector.epsilon
         else:
-            raise ValueError,'Unknown comparison for %s: %s' % (self.__class__.__name__,self.comparison)
+            raise ValueError('Unknown comparison for %s: %s' % (self.__class__.__name__,self.comparison))
 
     def desymbolize(self,table,debug=False):
         threshold = self.desymbolizeThreshold(self.threshold,table)
@@ -717,7 +717,7 @@ class KeyedPlane:
     def __str__(self):
         if self._string is None:
             operator = ['==','>','<'][self.comparison]
-            self._string = '%s %s %s' % (' + '.join(map(lambda (k,v): '%5.3f*%s' % (v,k),self.vector.items())),
+            self._string = '%s %s %s' % (' + '.join(map(lambda k,v: '%5.3f*%s' % (v,k),self.vector.items())),
                                              operator,self.threshold)
         return self._string
 
