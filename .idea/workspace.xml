@@ -16,8 +16,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/core/teamwork/teamtutor.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="961">
-              <caret line="359" column="21" selection-start-line="62" selection-start-column="4" selection-end-line="359" selection-end-column="21" />
+            <state relative-caret-position="-321">
+              <caret line="139" column="17" selection-start-line="139" selection-start-column="17" selection-end-line="139" selection-end-column="17" />
               <folding>
                 <element signature="e#346#393#0" expanded="true" />
               </folding>
@@ -178,7 +178,21 @@
       <option name="project" value="LOCAL" />
       <updated>1560723937909</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="&quot;Actually runs now&quot;">
+      <created>1560724029141</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1560724029141</updated>
+    </task>
+    <task id="LOCAL-00008" summary="&quot;Initial trust now 0.5&quot;">
+      <created>1560724256210</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1560724256210</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -213,7 +227,8 @@
     <MESSAGE value="&quot;Started to rework actions to be more modular&quot;" />
     <MESSAGE value="&quot;Minor edits&quot;" />
     <MESSAGE value="&quot;Actually runs now&quot;" />
-    <option name="LAST_COMMIT_MESSAGE" value="&quot;Actually runs now&quot;" />
+    <MESSAGE value="&quot;Initial trust now 0.5&quot;" />
+    <option name="LAST_COMMIT_MESSAGE" value="&quot;Initial trust now 0.5&quot;" />
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/externals/psychsim/world.py">
@@ -263,8 +278,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/core/teamwork/teamtutor.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="961">
-          <caret line="359" column="21" selection-start-line="62" selection-start-column="4" selection-end-line="359" selection-end-column="21" />
+        <state relative-caret-position="-321">
+          <caret line="139" column="17" selection-start-line="139" selection-start-column="17" selection-end-line="139" selection-end-column="17" />
           <folding>
             <element signature="e#346#393#0" expanded="true" />
           </folding>

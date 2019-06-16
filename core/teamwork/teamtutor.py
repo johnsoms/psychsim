@@ -90,12 +90,12 @@ class Tutoring:
                 self.world.setState(actor, 'Suggest_R' + str(i), self.S_START_R[index][i])
 
             student_tutor_trust = self.S_TRUST_T[index]
-            key = world.defineRelation(actor.name, 'Tutor', 'trusts')
-            world.setFeature(key, student_tutor_trust)
+            key = self.world.defineRelation(actor.name, 'Tutor', 'trusts')
+            self.world.setFeature(key, student_tutor_trust)
 
             student_self_trust = self.S_TRUST_S[index][index]
-            world.defineState(actor.name, 'Self-Trust', float)
-            world.setState(actor.name, 'Self-Trust', student_self_trust)
+            self.world.defineState(actor.name, 'Self-Trust', float)
+            self.world.setState(actor.name, 'Self-Trust', student_self_trust)
             others = [str(k) for k in range(self.S_ACTORS)]
             others.remove([str(index)])
             student_student_trust = {s:0.0 for s in others}
@@ -105,8 +105,8 @@ class Tutoring:
                                 student_self_trust)
                 for s in others:
                     student_student_trust[s] = self.S_TRUST_S[index][int(s)]
-                    key = world.defineRelation(actor.name, 'Actor'+s, 'trusts')
-                    world.setFeature(key, student_student_trust[s])
+                    key = self.world.defineRelation(actor.name, 'Actor'+s, 'trusts')
+                    self.world.setFeature(key, student_student_trust[s])
                     actor.setReward(minimizeDifference(stateKey(actor.name, 'R' + str(j)),
                                                        stateKey('Actor' + s, "R" + str(j))),
                                     student_student_trust[s])
@@ -134,10 +134,10 @@ class Tutoring:
                     other_actions.append((action,amount))
             student_tutor_trust = self.calculate_trust_tutor(index,game_result,indv_result,prev_action,tutor_action)
             key = binaryKey(actor.name, 'Tutor', 'trusts')
-            world.setFeature(key, student_tutor_trust)
+            self.world.setFeature(key, student_tutor_trust)
 
             student_self_trust = self.calculate_trust_self(index,game_result,indv_result,prev_action)
-            world.setState(actor.name, 'Self-Trust', student_self_trust)
+            self.world.setState(actor.name, 'Self-Trust', student_self_trust)
             others = [str(k) for k in range(self.S_ACTORS)]
             others.remove([str(index)])
             student_student_trust = {s:0.0 for s in others}
