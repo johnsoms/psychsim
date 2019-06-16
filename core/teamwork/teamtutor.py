@@ -26,7 +26,7 @@ class Tutoring:
     def __init__(self,
                  S_ACTORS=0,
                  S_START_R=[[0.0]],
-                 S_TRUST_T=[[0.0]],
+                 S_TRUST_T=[0.0],
                  S_TRUST_S=[[0.0]],
                  BEST=[[0.0]],
                  TUTOR=[0.0],
@@ -34,6 +34,8 @@ class Tutoring:
 
         self.S_ACTORS = S_ACTORS
         self.S_START_R = S_START_R
+        self.S_TRUST_T = S_TRUST_T
+        self.S_TRUST_S = S_TRUST_S
         self.BEST = BEST
         self.TUTOR = TUTOR
         self.MAX = MAX
@@ -363,8 +365,8 @@ def run():
     learn = Tutoring(
                 S_ACTORS=3,
                 S_START_R=[[1.0, 1.0, -1.0],[1.0, 1.0, -1.0],[1.0, 1.0, -1.0]],
-                S_TRUST_T=[1.0,1.0,1.0],
-                S_TRUST_S=[[1.0,1.0,1.0,1.0],[1.0,1.0,1.0,1.0],[1.0,1.0,1.0,1.0]],
+                S_TRUST_T=[0.5,0.5,0.5],
+                S_TRUST_S=[[0.5,0.5,0.5],[0.5,0.5,0.5],[0.5,0.5,0.5]],
                 BEST=[[1.,0.5,-1.],[1.,2.,-0.5],[1.,4.,-4.]],
                 TUTOR=[1.0,1.0,1.0],
                 MAX=4.0)
