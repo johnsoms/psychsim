@@ -1020,8 +1020,7 @@ class Scenario:
             # actor.setReward(minimizeDifference(stateKey(actor.name, 'y'), stateKey('Distractor' + str(index), 'y')),
             #                 self.ENEMY[1])
 
-            # actor.setReward(minimizeDifference(stateKey(enemy, 'x'), stateKey(enemy, 'goal_x')), self.ENEMY[2])
-            # actor.setReward(minimizeDifference(stateKey(enemy, 'y'), stateKey(enemy, 'goal_y')), self.ENEMY[2])
+
             # Reward for attacking enemy
             dict = {}
             edl = []
