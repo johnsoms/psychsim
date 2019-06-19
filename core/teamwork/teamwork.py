@@ -1028,9 +1028,9 @@ class Scenario:
                 enemy = 'Actor' + str(index)
                 actor.setReward(minimizeFeature(stateKey(enemy, 'health')), self.ENEMY[0])
                 actor.setReward(minimizeDifference(stateKey(enemy, 'x'), stateKey(enemy, 'goal_x')),
-                                self.AGENT[1])
+                                self.ENEMY[1])
                 actor.setReward(minimizeDifference(stateKey(enemy, 'y'), stateKey(enemy, 'goal_y')),
-                                self.AGENT[1])
+                                self.ENEMY[1])
                 if index == 0:
                     dict = {'if': equalFeatureRow(stateKey('Actor' + str(index), 'health'), '0'),
                      True: {}, False: False}
@@ -1614,7 +1614,7 @@ class Scenario:
         file.write("Enemy:\n")
         file.write("Minimizing soldier and enemy distance: " + str(self.ENEMY[0]) + "\n")
         file.write("Minimizing soldier and helicopter distance: " + str(self.ENEMY[1]) + "\n")
-        file.write("Minimizing soldier and goal distance: " + str(self.ENEMY[2]) + "\n")
+        # file.write("Minimizing soldier and goal distance: " + str(self.ENEMY[2]) + "\n")
         file.write("Base:\n")
         file.write("Minimizing helicopter and enemy distance: " + str(self.BASE[0]) + "\n")
         file.write("Minimizing helicopter cost: " + str(self.BASE[1]) + "\n")

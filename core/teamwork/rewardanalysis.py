@@ -4,22 +4,30 @@ import itertools
 import random
 from teamwork import *
 
-trials = 100
+trials = 10
 
-positions = [str(i)+","+str(j) for i in range(7) for j in range(7)]
-starts = list(itertools.combinations(positions, 3))
-random.shuffle(starts)
+positions = [["0,0", "0,1", "1,0"],
+             ["0,6", "0,5", "1,6"],
+             ["6,0", "6,1", "5,0"],
+             ["2,1", "5,2", "6,3"],
+             ["3,3", "4,3", "4,2"],
+             ["1,5", "1,1", "5,1"],
+             ["3,6", "3,2", "6,2"],
+             ["0,2", "0,3", "0,4"],
+             ["2,0", "3,0", "4,0"],
+             ["4,4", "5,3", "6,4"],]
 r1 = 1.0
-for r2 in {4.}:
-    for r3 in {4.}:
+for r2 in {0.25,0.5,1.,2.,4.}:
+    for r3 in {0.25,0.5,1.,2.,4.}:
         total_score = 0
-        pos_100 = random.sample(starts, trials)
+        print("1-"+str(r2)+"-"+str(r3))
         for trial in range(trials):
+            print(positions[trial])
             run = Scenario(
                 MAP_SIZE_X=10,
                 MAP_SIZE_Y=10,
                 F_ACTORS=3,
-                F_START_LOC=list(starts[trial]),
+                F_START_LOC=positions[trial],
                 F_GOAL_LOC=["5,5", "5,5", "5,5"],
                 F_ENERGY=[10.0],
                 E_ACTORS=3,
@@ -32,7 +40,7 @@ for r2 in {4.}:
             print(total_score)
             print(trial)
             print("________________________\n\n\n")
-        path = os.getcwd()+"/rewardtrials3/"
+        path = os.getcwd()+"/rewardtrials4/"
         scorefile = open(path + str(r2) +"_"+ str(r3) + ".txt", "w")
         scorefile.write(str(total_score))
         scorefile.close()
