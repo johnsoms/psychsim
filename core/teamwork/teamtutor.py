@@ -23,7 +23,8 @@ class Tutoring:
                  S_TRUST_S=[[0.0]],
                  BEST=[[0.0]],
                  TUTOR=[0.0],
-                 MAX = 4.0):
+                 MAX = 4.0,
+                 SIMPLE=True):
 
         self.S_ACTORS = S_ACTORS
         self.S_START_R = S_START_R
@@ -32,18 +33,41 @@ class Tutoring:
         self.BEST = BEST
         self.TUTOR = TUTOR
         self.MAX = MAX
+        self.SIMPLE = SIMPLE
 
         self.world = World()
         self.world.defineState(None, 'Max_R', float)
         self.world.setState(None, 'Max_R', self.MAX)
         self.world.defineState(None, 'Last_Result', float)
         self.world.setState(None, 'Last_Result', 0.)
-        self.world.addTermination(makeTree({'if': thresholdRow(stateKey(None, 'Last_Result'), 10.),
-                                            True: True, False: False}))
+        if not SIMPLE:
+            self.world.addTermination(makeTree({'if': thresholdRow(stateKey(None, 'Last_Result'), 10.),
+                                          True: True, False: False}))
+        else:
+            self.world.addTermination(makeTree({'if': equalRow(stateKey("Student0", 'R0'), 1.),
+                                                True: {'if': equalRow(stateKey("Student0", 'R1'), 4.),
+                                                True: {'if': equalRow(stateKey("Student0", 'R2'), 4.),
+                                                True: {'if': equalRow(stateKey("Student1", 'R0'), 1.),
+                                                True: {'if': equalRow(stateKey("Student1", 'R1'), 4.),
+                                                True: {'if': equalRow(stateKey("Student1", 'R2'), 4.),
+                                                True: {'if': equalRow(stateKey("Student2", 'R0'), 1.),
+                                                True: {'if': equalRow(stateKey("Student2", 'R1'), 4.),
+                                                True: {'if': equalRow(stateKey("Student2", 'R2'), 4.),
+                                                True: True, False: False},
+                                                       False: False},
+                                                       False: False},
+                                                       False: False},
+                                                       False: False},
+                                                       False: False},
+                                                       False: False},
+                                                       False: False},
+                                                       False: False}))
+        self.tutor = None
+        self.students = [None for i in range(S_ACTORS)]
         for i in range(len(self.BEST)):
             for j in range(len(self.BEST[i])):
-                self.world.defineState(None, 'Best_R'+str(j)+"_"+str(i), float)
-                self.world.setState(None, 'Best_R'+str(j)+"_"+str(i), self.BEST[i][j])
+                self.world.defineState(None, 'Best_R'+str(j), float)
+                self.world.setState(None, 'Best_R'+str(j), self.BEST[i][j])
 
         self.create_tutor_agent()
 
@@ -56,32 +80,36 @@ class Tutoring:
 
 
     def create_tutor_agent(self):
-
-        actor = Agent('Tutor')
-        self.world.addAgent(actor)
-        actor.setHorizon(5)
+        if not self.SIMPLE:
+            actor = Agent('Tutor')
+            self.tutor = actor
+            self.world.addAgent(actor)
+            actor.setHorizon(5)
 
         self.create_student_agents()
+        if not self.SIMPLE:
+            for index in range(self.S_ACTORS):
+                for i in range(len(self.BEST)):
+                    for j in range(len(self.BEST[0])):
+                        actor.setReward(minimizeDifference(stateKey('Student'+str(index),'R'+str(j)),stateKey(None,"Best_R"+str(j))),self.TUTOR[i])
+            self.world.defineState(actor, 'Prev_Action', float)
+            self.world.setState(actor, 'Prev_Action', 0.)
+            self.world.defineState(actor, 'Prev_Target', float)
+            self.world.setState(actor, 'Prev_Target', -1.)
+            self.world.defineState(actor, 'Prev_Student', float)
+            self.world.setState(actor, 'Prev_Student', -1.)
 
-        for index in range(self.S_ACTORS):
-            for i in range(len(self.BEST)):
-                for j in range(len(self.BEST[0])):
-                    actor.setReward(minimizeDifference(stateKey('Student'+str(index),'R'+str(j)),stateKey(None,"Best_R"+str(j)+"_"+str(i))),self.TUTOR[i])
-        self.world.defineState(actor, 'Prev_Action', float)
-        self.world.setState(actor, 'Prev_Action', 0.)
-        self.world.defineState(actor, 'Prev_Target', float)
-        self.world.setState(actor, 'Prev_Target', -1.)
-        self.world.defineState(actor, 'Prev_Student', float)
-        self.world.setState(actor, 'Prev_Student', -1.)
-
-        self.set_tutor_actions(actor)
+            self.set_tutor_actions(actor)
+        
 
 
     def create_student_agents(self):
+
         for index in range(self.S_ACTORS):
             actor = Agent('Student'+str(index))
+            self.students[index] = actor
             self.world.addAgent(actor)
-            actor.setHorizon(5)
+            actor.setHorizon(2)
             for i in range(len(self.BEST[0])):
                 self.world.defineState(actor, 'R' + str(i), float)
                 self.world.setState(actor, 'R' + str(i), self.S_START_R[index][i])
@@ -91,31 +119,39 @@ class Tutoring:
             self.world.setState(actor, 'Prev_Action', 0.)
             self.world.defineState(actor, 'Prev_Target', float)
             self.world.setState(actor, 'Prev_Target', -1.)
-            student_tutor_trust = self.S_TRUST_T[index]
-            key = self.world.defineRelation(actor.name, 'Tutor', 'trusts')
-            self.world.setFeature(key, student_tutor_trust)
+            if not self.SIMPLE:
+                student_tutor_trust = self.S_TRUST_T[index]
+                key = self.world.defineRelation(actor.name, 'Tutor', 'trusts')
+                self.world.setFeature(key, student_tutor_trust)
 
-            student_self_trust = self.S_TRUST_S[index][index]
-            self.world.defineState(actor.name, 'Self-Trust', float)
-            self.world.setState(actor.name, 'Self-Trust', student_self_trust)
-            others = [str(k) for k in range(self.S_ACTORS)]
-            others.remove(str(index))
-            student_student_trust = {s:0.0 for s in others}
-            for j in range(len(self.BEST[0])):
-                actor.setReward(minimizeDifference(stateKey(actor.name, 'R' + str(j)),
-                                                   stateKey(actor.name, "R" + str(j))),
-                                student_self_trust)
-            # for s in others:
-            #     student_student_trust[s] = self.S_TRUST_S[index][int(s)]
-            #     print(str(index)+"_TRUSTS_"+s)
-            #     key = self.world.defineRelation(actor.name, 'Student'+s, 'trusts')
-            #     self.world.setFeature(key, student_student_trust[s])
-            #     actor.setReward(minimizeDifference(stateKey(actor.name, 'R' + str(j)),
-            #                                        stateKey('Student' + s, "R" + str(j))),
-            #                     student_student_trust[s])
-            for i in range(len(self.BEST)):
-                actor.setReward(minimizeDifference(stateKey(actor.name, 'R' + str(j)),
-                                                   stateKey(None, "Suggest_R" + str(j) + "_" + str(i))), student_tutor_trust)
+                student_self_trust = self.S_TRUST_S[index][index]
+                self.world.defineState(actor.name, 'Self-Trust', float)
+                self.world.setState(actor.name, 'Self-Trust', student_self_trust)
+                others = [str(k) for k in range(self.S_ACTORS)]
+                others.remove(str(index))
+                student_student_trust = {s:0.0 for s in others}
+
+                for j in range(len(self.BEST[0])):
+                    actor.setReward(minimizeDifference(stateKey(actor.name, 'R' + str(j)),
+                                                       stateKey(actor.name, "R" + str(j))),
+                                    student_self_trust)
+                # for s in others:
+                #     student_student_trust[s] = self.S_TRUST_S[index][int(s)]
+                #     print(str(index)+"_TRUSTS_"+s)
+                #     key = self.world.defineRelation(actor.name, 'Student'+s, 'trusts')
+                #     self.world.setFeature(key, student_student_trust[s])
+                #     actor.setReward(minimizeDifference(stateKey(actor.name, 'R' + str(j)),
+                #                                        stateKey('Student' + s, "R" + str(j))),
+                #                     student_student_trust[s])
+
+                for j in range(len(self.BEST[0])):
+                    actor.setReward(minimizeDifference(stateKey(actor.name, 'R' + str(j)),
+                                                   stateKey(None, "Suggest_R" + str(j))), student_tutor_trust)
+            else:
+                for j in range(len(self.BEST[0])):
+                    actor.setReward(minimizeDifference(stateKey(actor.name, 'R' + str(j)),
+                                                   stateKey(None, 'Best_R'+str(j))),
+                                10.)
 
             self.set_student_actions(actor)
 
@@ -125,7 +161,7 @@ class Tutoring:
         target = self.world.getState("Tutor", "Prev_Student").domain()[0]
         tutor_action = (action, amount, target)
         for index in range(self.S_ACTORS):
-            actor = Agent('Student'+str(index))
+            actor = self.students[index]
             amount = self.world.getState(actor.name,"Prev_Action").domain()[0]
             action = self.world.getState(actor.name,"Prev_Target").domain()[0]
             prev_action = (action, amount)
@@ -197,14 +233,14 @@ class Tutoring:
 
     def set_tutor_actions(self, actor):
         for index in range(self.S_ACTORS):
-            action = actor.addAction({'verb': 'No_Tutor','object':'Student'+str(index)})
+            action = actor.addAction({'verb': 'No_Tutor'})
             for i in range(len(self.BEST[0])):
                 tree = makeTree(incrementMatrix(stateKey('Student'+str(index), 'Suggest_R' + str(i)), 0.))
                 self.world.setDynamics(stateKey('Student'+str(index), 'Suggest_R'+str(i)), action, tree)
             # Modify Rewards by recommendation
-            for i in range(len(self.BEST[0])):
-                for val in [0.25,0.5,0.75,1.,1.25,1.5,1.75,2.,2.25,2.5,2.75,3,3.25,3.5,3.75,4.]:
-                    action = actor.addAction({'verb': 'Suggest_R' + str(i) + '_Increase','object':'Student'+str(index),'amount':val})
+            for val in [0.25,0.5,0.75,1.,1.25,1.5,1.75,2.,2.25,2.5,2.75,3,3.25,3.5,3.75,4.]:
+                action = actor.addAction({'verb': 'Suggest_R' + str(i) + '_Increase', 'amount':val})
+                for i in range(len(self.BEST[0])):
                     tree = makeTree(incrementMatrix(stateKey('Student'+str(index), 'Suggest_R' + str(i)), val))
                     tree2 = makeTree(setToConstantMatrix(stateKey(actor,'Prev_Action'),val))
                     tree3 = makeTree(setToConstantMatrix(stateKey(actor, 'Prev_Target'), float(i)))
@@ -220,7 +256,8 @@ class Tutoring:
                     tree = makeTree(dict)
                     actor.setLegal(action, tree)
 
-                    action = actor.addAction({'verb': 'Suggest_R' + str(i) + '_Decrease','object':'Student'+str(index),'amount':val})
+                action = actor.addAction({'verb': 'Suggest_R' + str(i) + '_Decrease', 'amount':val})
+                for i in range(len(self.BEST[0])):
                     tree = makeTree(incrementMatrix(stateKey('Student'+str(index), 'Suggest_R' + str(i)), -1. * val))
                     tree2 = makeTree(setToConstantMatrix(stateKey(actor, 'Prev_Action'), -1. * val))
                     tree3 = makeTree(setToConstantMatrix(stateKey(actor, 'Prev_Target'), float(i)))
@@ -244,56 +281,32 @@ class Tutoring:
             self.world.setDynamics(stateKey(action['subject'], 'R'+str(i)), action, tree)
         # Modify Rewards by either accepting or rebelling against instruction
         for i in range(len(self.BEST[0])):
-            for val in [0.25,0.5,0.75,1.,1.25,1.5,1.75,2.,2.25,2.5,2.75,3,3.25,3.5,3.75,4.]:
-                action = actor.addAction({'verb': 'Modify_R'+str(i)+'_Accept','amount':val})
-                tree = makeTree(incrementMatrix(stateKey(action['subject'], 'R'+str(i)), val))
+            for val in [0.25,0.5,1.,2.,4.,-0.25,-0.5,-1.,-2.,-4.]:
+                action = actor.addAction({'verb': 'Modify_R'+str(i),'amount':val})
+                tree = makeTree(setToConstantMatrix(stateKey(action['subject'], 'R'+str(i)), val))
 
                 self.world.setDynamics(stateKey(action['subject'], 'R'+str(i)), action, tree)
 
-                dict = {'if': differenceRow(stateKey(actor.name, 'R'+str(i)),stateKey(None, 'Max_R'),val),
-                        True:True,
-                        False:False}
-                tree = makeTree(dict)
-                actor.setLegal(action, tree)
+                # dict = {'if': differenceRow(stateKey(actor.name, 'R'+str(i)),stateKey(None, 'Max_R'),val),
+                #         True:True,
+                #         False:False}
+                # tree = makeTree(dict)
+                # actor.setLegal(action, tree)
 
-                action = actor.addAction({'verb': 'Modify_R' + str(i) + '_Reject','amount':val})
-                tree = makeTree(incrementMatrix(stateKey(action['subject'], 'R' + str(i)), -1.*val))
-                self.world.setDynamics(stateKey(action['subject'], 'R' + str(i)), action, tree)
+                # action = actor.addAction({'verb': 'Modify_R' + str(i) + '_Reject','amount':val})
+                # tree = makeTree(incrementMatrix(stateKey(action['subject'], 'R' + str(i)), -1.*val))
+                # self.world.setDynamics(stateKey(action['subject'], 'R' + str(i)), action, tree)
 
-                dict = {'if': differenceRow(stateKey(actor.name, 'R' + str(i)), 0.0, val),
-                        True: True,
-                        False: False}
-                tree = makeTree(dict)
-                actor.setLegal(action, tree)
+                # dict = {'if': differenceRow(stateKey(actor.name, 'R' + str(i)), 0.0, val),
+                #         True: True,
+                #         False: False}
+                # tree = makeTree(dict)
+                # actor.setLegal(action, tree)
 
     def run_without_visual(self):
         num_runs = 0
         game_result_total = 0.
-        last_run = Scenario(
-            MAP_SIZE_X=7,
-            MAP_SIZE_Y=7,
-            F_ACTORS=3,
-            F_START_LOC=[str(random.randint(0, 6)) + "," + str(random.randint(0, 6)),
-                         str(random.randint(0, 6)) + "," + str(random.randint(0, 6)),
-                         str(random.randint(0, 6)) + "," + str(random.randint(0, 6))],
-            F_GOAL_LOC=["5,5", "5,5", "5,5"],
-            F_ENERGY=[10.0],
-            E_ACTORS=3,
-            E_START_LOC=["5,4", "4,5", "6,5"],
-            E_PATROL_RANGE=5,
-            ENEMY=[0.7, 0.7, -1.0],
-            AGENT=self.S_START_R
-        )
-        win = last_run.run_without_visual()
-        game_result_total += win[0]
-        if game_result_total < 10.:
-            game_result_total = 0.
-        self.world.setState(None, 'Last_Result', game_result_total)
-        students = self.S_START_R
-        while not self.world.terminated():
-            result = self.world.step()
-            num_runs += 1
-            students = [[self.world.getState('Student'+str(i), 'R' + str(j)).domain()[0] for j in range(len(self.BEST[0]))] for i in range(self.S_ACTORS)]
+        if not self.SIMPLE:
             last_run = Scenario(
                 MAP_SIZE_X=7,
                 MAP_SIZE_Y=7,
@@ -307,30 +320,60 @@ class Tutoring:
                 E_START_LOC=["5,4", "4,5", "6,5"],
                 E_PATROL_RANGE=5,
                 ENEMY=[0.7, 0.7, -1.0],
-                AGENT=[students[i] for i in range(self.S_ACTORS)]
+                AGENT=self.S_START_R
             )
             win = last_run.run_without_visual()
-            game_result = win[0]
-            indv_result = win[1]
-            if win[0] == 0.:
+            game_result_total += win[0]
+            if game_result_total < 10.:
                 game_result_total = 0.
-            else:
-                game_result_total += win[0]
-            print(game_result_total)
-            print(students)
             self.world.setState(None, 'Last_Result', game_result_total)
-            self.update_student_agents(game_result, indv_result)
+        students = self.S_START_R
+        while not self.world.terminated():
+            result = self.world.step()
+            num_runs += 1
+            students = [[self.world.getState('Student'+str(i), 'R' + str(j)).domain()[0] for j in range(len(self.BEST[0]))] for i in range(self.S_ACTORS)]
+            if not self.SIMPLE:
+                last_run = Scenario(
+                    MAP_SIZE_X=7,
+                    MAP_SIZE_Y=7,
+                    F_ACTORS=3,
+                    F_START_LOC=[str(random.randint(0, 6)) + "," + str(random.randint(0, 6)),
+                                 str(random.randint(0, 6)) + "," + str(random.randint(0, 6)),
+                                 str(random.randint(0, 6)) + "," + str(random.randint(0, 6))],
+                    F_GOAL_LOC=["5,5", "5,5", "5,5"],
+                    F_ENERGY=[10.0],
+                    E_ACTORS=3,
+                    E_START_LOC=["5,4", "4,5", "6,5"],
+                    E_PATROL_RANGE=5,
+                    ENEMY=[0.7, 0.7, -1.0],
+                    AGENT=[students[i] for i in range(self.S_ACTORS)]
+                )
+                win = last_run.run_without_visual()
+                game_result = win[0]
+                indv_result = win[1]
+                if win[0] == 0.:
+                    game_result_total = 0.
+                else:
+                    game_result_total += win[0]
+                print(game_result_total)
+            print(students)
+            print(num_runs)
+            self.world.setState(None, 'Last_Result', game_result_total)
+            if not self.SIMPLE:
+                self.update_student_agents(game_result, indv_result)
         return num_runs, students
 
 def run():
     learn = Tutoring(
                 S_ACTORS=3,
                 S_START_R=[[1.0, 1.0, -0.5],[1.0, 1.0, -0.5],[1.0, 1.0, -0.5]],
-                S_TRUST_T=[0.5,0.5,0.5],
-                S_TRUST_S=[[0.5,0.5,0.5],[0.5,0.5,0.5],[0.5,0.5,0.5]],
-                BEST=[[1.,0.5,-1.],[1.,2.,-0.5],[1.,4.,-4.]],
+                S_TRUST_T=[1.,1.,1.],
+                S_TRUST_S=[[0.,0.,0.],[0.,0.,0.],[0.,0.,0.]],
+                # BEST=[[1.,0.5,-1.],[1.,2.,-0.5],[1.,4.,-4.]],
+                BEST=[[1., 4., -4.]],
                 TUTOR=[1.0,1.0,1.0],
-                MAX=4.0)
+                MAX=4.0,
+                SIMPLE=True)
     score = learn.run_without_visual()
     print(score[1])
     print(score[0])

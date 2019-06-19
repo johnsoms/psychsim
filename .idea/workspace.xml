@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="9665b86e-27a3-4217-9a69-ac30afe85257" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/core/teamwork/rewardanalysis.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/teamwork/rewardanalysis.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/core/teamwork/teamtutor.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/teamwork/teamtutor.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/core/teamwork/teamwork.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/teamwork/teamwork.py" afterDir="false" />
@@ -17,31 +18,32 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/core/teamwork/teamtutor.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="180">
-              <caret line="273" column="25" lean-forward="true" selection-start-line="273" selection-start-column="25" selection-end-line="273" selection-end-column="25" />
+            <state relative-caret-position="2142">
+              <caret line="283" column="62" selection-start-line="283" selection-start-column="62" selection-end-line="283" selection-end-column="62" />
               <folding>
                 <element signature="e#346#393#0" expanded="true" />
+                <element signature="e#5566#7273#0" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/core/teamwork/teamwork.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-2165">
-              <caret line="895" column="15" selection-start-line="895" selection-start-column="12" selection-end-line="895" selection-end-column="15" />
+            <state relative-caret-position="251">
+              <caret line="1884" column="24" selection-start-line="1884" selection-start-column="24" selection-end-line="1884" selection-end-column="24" />
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/core/teamwork/rewardanalysis.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="133">
-              <caret line="7" column="12" selection-start-line="7" selection-start-column="12" selection-end-line="7" selection-end-column="12" />
+            <state relative-caret-position="585">
+              <caret line="33" column="49" selection-start-line="33" selection-start-column="49" selection-end-line="33" selection-end-column="49" />
               <folding>
-                <element signature="e#0#14#0" expanded="true" />
+                <element signature="e#0#21#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -51,21 +53,11 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>RESULT</find>
-      <find>self.AGENT</find>
-      <find>evaluate_score()</find>
-      <find>run_without_visual</find>
-      <find>print</find>
-      <find>print(</find>
-      <find>edl.append</find>
-      <find>ActionSet</find>
-      <find>actionS</find>
       <find>setBelief</find>
       <find>Agent</find>
       <find>Student</find>
       <find>Actor</find>
       <find>calculate_trust_tutor</find>
-      <find>update_student_agents</find>
       <find>def thresholdRow</find>
       <find>stateKey</find>
       <find>Last_Result</find>
@@ -80,7 +72,17 @@
       <find>create_enemy</find>
       <find>int(</find>
       <find>float)</find>
+      <find>def get</find>
+      <find>Agent:</find>
+      <find>keys()</find>
+      <find>def ke</find>
       <find>Nop</find>
+      <find>agents.keys()</find>
+      <find>update_student_agents</find>
+      <find>self.BEST</find>
+      <find>equal</find>
+      <find>set_student_actions</find>
+      <find>set_tutor_actions</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -95,15 +97,15 @@
     <option name="CHANGED_PATHS">
       <list>
         <option value="$PROJECT_DIR$/externals/psychsim/pwl.py" />
-        <option value="$PROJECT_DIR$/core/teamwork/teamwork.py" />
         <option value="$PROJECT_DIR$/core/teamwork/teamtutor.py" />
         <option value="$PROJECT_DIR$/core/teamwork/rewardanalysis.py" />
+        <option value="$PROJECT_DIR$/core/teamwork/teamwork.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds" fullScreen="true">
-    <option name="width" value="2560" />
-    <option name="height" value="1600" />
+    <option name="width" value="1440" />
+    <option name="height" value="900" />
   </component>
   <component name="ProjectView">
     <navigator proportions="" version="1">
@@ -205,11 +207,11 @@
       <window_info content_ui="combo" id="Project" order="0" weight="0.13505976" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
-      <window_info anchor="bottom" id="Version Control" order="0" visible="true" weight="0.09864365" />
+      <window_info anchor="bottom" id="Version Control" order="0" weight="0.09864365" />
       <window_info anchor="bottom" id="Python Console" order="1" weight="0.32929516" />
       <window_info anchor="bottom" id="Event Log" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="3" />
-      <window_info anchor="bottom" id="Find" order="4" />
+      <window_info anchor="bottom" id="Find" order="4" weight="0.3292232" />
       <window_info anchor="bottom" id="Run" order="5" />
       <window_info anchor="bottom" id="Debug" order="6" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="7" weight="0.25" />
@@ -234,13 +236,6 @@
     <option name="LAST_COMMIT_MESSAGE" value="&quot;Initial trust now 0.5&quot;" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/externals/psychsim/world.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="79">
-          <caret line="1231" column="13" selection-start-line="1231" selection-start-column="13" selection-end-line="1231" selection-end-column="13" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/externals/psychsim/action.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-561">
@@ -251,13 +246,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/externals/psychsim/agent.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="638">
-          <caret line="694" column="38" selection-start-line="694" selection-start-column="38" selection-end-line="694" selection-end-column="38" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/externals/psychsim/pwl.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1395">
@@ -265,30 +253,45 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/core/teamwork/teamwork.py">
+    <entry file="file://$PROJECT_DIR$/externals/psychsim/agent.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-2165">
-          <caret line="895" column="15" selection-start-line="895" selection-start-column="12" selection-end-line="895" selection-end-column="15" />
+        <state relative-caret-position="151">
+          <caret line="32" column="8" selection-start-line="32" selection-start-column="8" selection-end-line="32" selection-end-column="8" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/core/teamwork/teamtutor.py">
+    <entry file="file://$PROJECT_DIR$/externals/psychsim/world.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="180">
-          <caret line="273" column="25" lean-forward="true" selection-start-line="273" selection-start-column="25" selection-end-line="273" selection-end-column="25" />
-          <folding>
-            <element signature="e#346#393#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="19">
+          <caret line="1231" column="13" selection-start-line="1231" selection-start-column="13" selection-end-line="1231" selection-end-column="13" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/core/teamwork/rewardanalysis.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="133">
-          <caret line="7" column="12" selection-start-line="7" selection-start-column="12" selection-end-line="7" selection-end-column="12" />
+        <state relative-caret-position="585">
+          <caret line="33" column="49" selection-start-line="33" selection-start-column="49" selection-end-line="33" selection-end-column="49" />
           <folding>
-            <element signature="e#0#14#0" expanded="true" />
+            <element signature="e#0#21#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/core/teamwork/teamtutor.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2142">
+          <caret line="283" column="62" selection-start-line="283" selection-start-column="62" selection-end-line="283" selection-end-column="62" />
+          <folding>
+            <element signature="e#346#393#0" expanded="true" />
+            <element signature="e#5566#7273#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/core/teamwork/teamwork.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="251">
+          <caret line="1884" column="24" selection-start-line="1884" selection-start-column="24" selection-end-line="1884" selection-end-column="24" />
         </state>
       </provider>
     </entry>

@@ -1027,10 +1027,10 @@ class Scenario:
             for index in range(0, self.F_ACTORS):
                 enemy = 'Actor' + str(index)
                 actor.setReward(minimizeFeature(stateKey(enemy, 'health')), self.ENEMY[0])
-                # actor.setReward(minimizeDifference(stateKey(enemy, 'x'), stateKey(enemy, 'goal_x')),
-                #                 -1.3*self.AGENT[0])
-                # actor.setReward(minimizeDifference(stateKey(enemy, 'y'), stateKey(enemy, 'goal_y')),
-                #                 -1.3*self.AGENT[0])
+                actor.setReward(minimizeDifference(stateKey(enemy, 'x'), stateKey(enemy, 'goal_x')),
+                                self.AGENT[1])
+                actor.setReward(minimizeDifference(stateKey(enemy, 'y'), stateKey(enemy, 'goal_y')),
+                                self.AGENT[1])
                 if index == 0:
                     dict = {'if': equalFeatureRow(stateKey('Actor' + str(index), 'health'), '0'),
                      True: {}, False: False}
@@ -1882,7 +1882,7 @@ def run(genome,visual):
         BASE=[b1, b2],
         # DISTRACTOR=[h1, h2],
         # SUPPLIER=[d1, d2],
-        ENEMY=[0.7, 0.7, -1.0],
+        ENEMY=[0.7, -0.1],
         AGENT=[[1.0, 1.0, -1.0],[1.0, 1.0, -1.0],[1.0, 1.0, -1.0]])
     score = None
     if visual:

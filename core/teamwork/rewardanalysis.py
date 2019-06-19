@@ -1,4 +1,3 @@
-import Tkinter
 from Tkinter import *
 import os
 import itertools
@@ -11,8 +10,8 @@ positions = [str(i)+","+str(j) for i in range(7) for j in range(7)]
 starts = list(itertools.combinations(positions, 3))
 random.shuffle(starts)
 r1 = 1.0
-for r2 in {0.25,0.5,1.0,2.0,4.0}:
-    for r3 in {0.25,0.5,1.0,2.0,4.0}:
+for r2 in {4.}:
+    for r3 in {4.}:
         total_score = 0
         pos_100 = random.sample(starts, trials)
         for trial in range(trials):
@@ -30,7 +29,10 @@ for r2 in {0.25,0.5,1.0,2.0,4.0}:
                 AGENT=[[r1, r2, -1.0*r3] for i in range(3)])
 
             total_score += run.run_without_visual()[0]
-        path = os.getcwd()+"/rewardtrials/"
+            print(total_score)
+            print(trial)
+            print("________________________\n\n\n")
+        path = os.getcwd()+"/rewardtrials3/"
         scorefile = open(path + str(r2) +"_"+ str(r3) + ".txt", "w")
         scorefile.write(str(total_score))
         scorefile.close()
