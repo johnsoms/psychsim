@@ -39,7 +39,8 @@ class Scenario:
                  # DISTRACTOR=[0.0, 0.0],
                  # SUPPLIER=[0.0, 0.0],
                  ENEMY=[0.0, 0.0, 0.0],
-                 AGENT=[[0.0, 0.0, 0.0]]):
+                 AGENT=[[0.0, 0.0, 0.0]],
+                 ABILITY=[[1.0,1.0],[1.0,1.0],[1.0,1.0]]):
 
         self.MAP_SIZE_X = MAP_SIZE_X
         self.MAP_SIZE_Y = MAP_SIZE_Y
@@ -60,13 +61,14 @@ class Scenario:
         # self.SUPPLIER = SUPPLIER
         self.ENEMY = ENEMY
         self.AGENT = AGENT
+        self.ABILITY = ABILITY
 
         self.world = World()
         self.world.defineState(None, 'turns', int)
         self.world.setState(None, 'turns', 0)
-        self.world.addTermination(makeTree({'if': thresholdRow(stateKey(None, 'turns'), 40),
+        self.world.addTermination(makeTree({'if': thresholdRow(stateKey(None, 'turns'), 80),
                                             True: True, False: False}))
-
+        self.enemy_agents = []
         self.friendly_agents = self.create_friendly_agents()
 
         # self.create_distract_agents()
@@ -219,16 +221,10 @@ class Scenario:
                             self.AGENT[index][0])
             actor.setReward(minimizeDifference(stateKey(actor.name, 'y'), stateKey(actor.name, 'goal_y')),
                             self.AGENT[index][0])
-            actor.setReward(achieveFeatureValue(stateKey(actor.name, 'health'),'0'), self.AGENT[index][2])
+            actor.setReward(minimizeDifference(stateKey(actor.name, 'health'),'0'),
+                            self.AGENT[index][2])
             # Negative reward for being eliminated
             actors.append(actor)
-            enemy = 'Enemy' + str(index)
-
-
-
-                # actor.setReward(minimizeDifference(stateKey(actor.name, 'x'), stateKey(enemy, 'x')), self.AGENT[1])
-                # actor.setReward(minimizeDifference(stateKey(actor.name, 'y'), stateKey(enemy, 'y')), self.AGENT[1])
-            # actor.setReward(minimizeDifference(stateKey(actor.name, 'y'), stateKey(enemy, 'y')), self.AGENT[1])
         self.create_enemy_agents()
         for index in range(0, self.F_ACTORS):
             actor = actors[index]
@@ -252,9 +248,9 @@ class Scenario:
     def set_friendly_actions(self, actor):
         # Nop
         action = actor.addAction({'verb': 'Wait'})
-        tree = makeTree(incrementMatrix(stateKey(action['subject'], 'x'), 0.))
+        tree = makeTree(incrementMatrix(stateKey(action['subject'], 'x'), 0))
         self.world.setDynamics(stateKey(action['subject'], 'x'), action, tree)
-        tree = makeTree(incrementMatrix(stateKey(action['subject'], 'y'), 0.))
+        tree = makeTree(incrementMatrix(stateKey(action['subject'], 'y'), 0))
         self.world.setDynamics(stateKey(action['subject'], 'y'), action, tree)
         tree = makeTree(incrementMatrix('turns', 1.0))
         self.world.setDynamics(stateKey(None, 'turns'), action, tree)
@@ -263,10 +259,10 @@ class Scenario:
 
         # Increment X position
         action = actor.addAction({'verb': 'MoveRight'})
-        tree = makeTree(incrementMatrix(stateKey(action['subject'], 'x'), 1.))
+        tree = makeTree(incrementMatrix(stateKey(action['subject'], 'x'), 1))
         self.world.setDynamics(stateKey(action['subject'], 'x'), action, tree)
         tree = makeTree(incrementMatrix('turns', 1.0))
-        self.world.setDynamics('turns', action, tree)
+        self.world.setDynamics(stateKey(None, 'turns'), action, tree)
         # tree = makeTree(incrementMatrix(stateKey(action['subject'], 'energy'), -1.0))
         # self.world.setDynamics(stateKey(action['subject'], 'energy'), action, tree)
 
@@ -276,7 +272,7 @@ class Scenario:
         edl = []
         for index2 in range(self.E_ACTORS):
             if not dict:
-                dict.update({'if': equalRow(stateKey(actor.name, 'x'), str(self.MAP_SIZE_X)),
+                dict.update({'if': equalRow(stateKey(actor.name, 'x'), self.MAP_SIZE_X-1),
                          True: False,
                          False: {'if':differenceRow(stateKey(actor.name, 'x'),stateKey('Enemy' + str(index2), 'x'), -1),
                                  True: {'if': differenceRow(stateKey(actor.name, 'x'),stateKey('Enemy' + str(index2), 'x'), 0),
@@ -309,15 +305,23 @@ class Scenario:
                                True: {
                                    'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x'),
                                                        0),
-                                   True: True,
+                                   True: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True},
                                    False: {
                                        'if': equalFeatureRow(stateKey(actor.name, 'y'),
                                                              stateKey('Actor' + str(index2), 'y')),
-                                       False: True,
+                                       False: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True},
                                        True: {'if': equalFeatureRow(stateKey('Actor' + str(index2), 'health'), '0'),
-                                              True: True,
+                                              True: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True},
                                               False: False}}},
-                               False: True}
+                               False: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True}}
                     combined_dict = newdict
                     for dict2 in reversed(edl):
                         combined_dict = recursiveFillEmptyDicts(dict2, combined_dict)
@@ -339,14 +343,22 @@ class Scenario:
                 newdict = {'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x'), -1),
                            True: {
                                'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x'), 0),
-                               True: True,
+                               True: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True},
                                False: {
                                    'if': equalFeatureRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y')),
                                    True: {'if': equalFeatureRow(stateKey('Actor' + str(index2), 'health'), '0'),
-                                           True: True,
+                                           True: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True},
                                            False: False},
-                                   False: True}},
-                           False: True}
+                                   False: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True}}},
+                           False: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True}}
                 combined_dict = newdict
                 for dict2 in reversed(edl):
                     combined_dict = recursiveFillEmptyDicts(dict2, combined_dict)
@@ -358,7 +370,7 @@ class Scenario:
 
         # Decrement X position
         action = actor.addAction({'verb': 'MoveLeft'})
-        tree = makeTree(incrementMatrix(stateKey(action['subject'], 'x'), -1.))
+        tree = makeTree(incrementMatrix(stateKey(action['subject'], 'x'), -1))
         self.world.setDynamics(stateKey(action['subject'], 'x'), action, tree)
         tree = makeTree(incrementMatrix('turns', 1.0))
         self.world.setDynamics(stateKey(None, 'turns'), action, tree)
@@ -373,10 +385,10 @@ class Scenario:
                 dict.update({'if': equalRow(stateKey(actor.name, 'x'), 0),
                              True: False,
                              False: {
-                                 'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Enemy' + str(index2), 'x'),
-                                                     0),
-                                 True: {'if': differenceRow(stateKey(actor.name, 'x'),
-                                                            stateKey('Enemy' + str(index2), 'x'), 1),
+                                 'if': differenceRow(stateKey('Enemy' + str(index2), 'x'), stateKey(actor.name, 'x'),
+                                                     -1),
+                                 True: {'if': differenceRow(stateKey('Enemy' + str(index2), 'x'), stateKey(actor.name, 'x'),
+                                                             0),
                                         True: {},
                                         False: {'if': equalFeatureRow(stateKey(actor.name, 'y'),
                                                                     stateKey('Enemy' + str(index2), 'y')),
@@ -387,9 +399,9 @@ class Scenario:
                                                         False: False}}},
                                  False: {}}})
             else:
-                newdict = {'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Enemy' + str(index2), 'x'), 0),
+                newdict = {'if': differenceRow(stateKey('Enemy' + str(index2), 'x'), stateKey(actor.name, 'x'),  -1),
                            True: {
-                               'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Enemy' + str(index2), 'x'), 1),
+                               'if': differenceRow(stateKey('Enemy' + str(index2), 'x'), stateKey(actor.name, 'x'), 0),
                                True: {},
                                False: {
                                    'if': equalFeatureRow(stateKey(actor.name, 'y'), stateKey('Enemy' + str(index2), 'y')),
@@ -404,27 +416,35 @@ class Scenario:
                 continue
             elif index2 != (self.F_ACTORS - 1):
                 if index2+1 == (self.F_ACTORS - 1) and 'Actor' + str(index2+1) == actor.name:
-                    newdict = {'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x'), 0),
+                    newdict = {'if': differenceRow(stateKey('Actor' + str(index2), 'x'), stateKey(actor.name, 'x'), -1),
                                True: {
-                                   'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x'),
-                                                       1),
-                                   True: True,
+                                   'if': differenceRow(stateKey('Actor' + str(index2), 'x'), stateKey(actor.name, 'x'),
+                                                       0),
+                                   True: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True},
                                    False: {
                                        'if': equalFeatureRow(stateKey(actor.name, 'y'),
                                                              stateKey('Actor' + str(index2), 'y')),
-                                       False: True,
+                                       False: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True},
                                        True: {'if': equalFeatureRow(stateKey('Actor' + str(index2), 'health'), '0'),
-                                              True: True,
+                                              True: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True},
                                               False: False}}},
-                               False: True}
+                               False: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True}}
                     combined_dict = newdict
                     for dict2 in reversed(edl):
                         combined_dict = recursiveFillEmptyDicts(dict2, combined_dict)
                     dict = recursiveFillEmptyDicts(dict, combined_dict)
                 else:
-                    newdict = {'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x'), 0),
+                    newdict = {'if': differenceRow(stateKey('Actor' + str(index2), 'x'), stateKey(actor.name, 'x'), -1),
                                True: {
-                                   'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x'), 1),
+                                   'if': differenceRow(stateKey('Actor' + str(index2), 'x'), stateKey(actor.name, 'x'), 0),
                                    True: {},
                                    False: {
                                        'if': equalFeatureRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y')),
@@ -435,17 +455,25 @@ class Scenario:
                                False: {}}
                     edl.append(newdict)
             else:
-                newdict = {'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x'), 0),
+                newdict = {'if': differenceRow(stateKey('Actor' + str(index2), 'x'), stateKey(actor.name, 'x'), -1),
                            True: {
-                               'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x'), 1),
-                               True: True,
+                               'if': differenceRow(stateKey('Actor' + str(index2), 'x'), stateKey(actor.name, 'x'), 0),
+                               True: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True},
                                False: {
                                    'if': equalFeatureRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y')),
-                                   False: True,
+                                   False: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True},
                                    True: {'if': equalFeatureRow(stateKey('Actor' + str(index2), 'health'), '0'),
-                                           True: True,
+                                           True: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True},
                                            False: False}}},
-                           False: True}
+                           False: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True}}
                 combined_dict = newdict
                 for dict2 in reversed(edl):
                     combined_dict = recursiveFillEmptyDicts(dict2, combined_dict)
@@ -469,7 +497,7 @@ class Scenario:
         edl = []
         for index2 in range(self.E_ACTORS):
             if not dict:
-                dict.update({'if': equalRow(stateKey(actor.name, 'y'), str(self.MAP_SIZE_Y)),
+                dict.update({'if': equalRow(stateKey(actor.name, 'y'), str(self.MAP_SIZE_Y-1)),
                              True: False,
                              False: {
                                  'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Enemy' + str(index2), 'y'),
@@ -507,15 +535,23 @@ class Scenario:
                                True: {
                                    'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y'),
                                                        0),
-                                   True: True,
+                                   True: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True},
                                    False: {
                                        'if': equalFeatureRow(stateKey(actor.name, 'x'),
                                                              stateKey('Actor' + str(index2), 'x')),
-                                       False: True,
+                                       False: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True},
                                        True: {'if': equalFeatureRow(stateKey('Actor' + str(index2), 'health'), '0'),
-                                              True: True,
+                                              True: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True},
                                               False: False}}},
-                               False: True}
+                               False: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True}}
                     combined_dict = newdict
                     for dict2 in reversed(edl):
                         combined_dict = recursiveFillEmptyDicts(dict2, combined_dict)
@@ -539,14 +575,22 @@ class Scenario:
                 newdict = {'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y'), -1),
                            True: {
                                'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y'), 0),
-                               True: True,
+                               True: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True},
                                False: {
                                    'if': equalFeatureRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x')),
-                                   False: True,
+                                   False: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True},
                                    True: {'if': equalFeatureRow(stateKey('Actor' + str(index2), 'health'), '0'),
-                                           True: True,
+                                           True: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True},
                                            False: False}}},
-                           False: True}
+                           False: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True}}
                 
                 combined_dict = newdict
                 for dict2 in reversed(edl):
@@ -571,13 +615,13 @@ class Scenario:
         edl = []
         for index2 in range(self.E_ACTORS):
             if not dict:
-                dict.update({'if': equalRow(stateKey(actor.name, 'y'), 0),
+                dict.update({'if': equalRow(stateKey(actor.name, 'y'), '0'),
                              True: False,
                              False: {
-                                 'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Enemy' + str(index2), 'y'),
-                                                     0),
-                                 True: {'if': differenceRow(stateKey(actor.name, 'y'),
-                                                            stateKey('Enemy' + str(index2), 'y'), 1),
+                                 'if': differenceRow(stateKey('Enemy' + str(index2), 'y'), stateKey(actor.name, 'y'),
+                                                     -1),
+                                 True: {'if': differenceRow(stateKey('Enemy' + str(index2), 'y'), stateKey(actor.name, 'y'),
+                                                             0),
                                         True: {},
                                         False: {'if': equalFeatureRow(stateKey(actor.name, 'x'),
                                                                     stateKey('Enemy' + str(index2), 'x')),
@@ -588,9 +632,9 @@ class Scenario:
                                                         False: False}}},
                                  False: {}}})
             else:
-                newdict = {'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Enemy' + str(index2), 'y'), 0),
+                newdict = {'if': differenceRow(stateKey('Enemy' + str(index2), 'y'), stateKey(actor.name, 'y'), -1),
                            True: {
-                               'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Enemy' + str(index2), 'y'), 1),
+                               'if': differenceRow(stateKey('Enemy' + str(index2), 'y'), stateKey(actor.name, 'y'), 0),
                                True: {},
                                False: {
                                    'if': equalFeatureRow(stateKey(actor.name, 'x'), stateKey('Enemy' + str(index2), 'x')),
@@ -607,28 +651,36 @@ class Scenario:
             elif index2 != (self.F_ACTORS - 1):
                 if index2+1 == (self.F_ACTORS - 1) and 'Actor' + str(index2+1) == actor.name:
                     
-                    newdict = {'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y'), 0),
+                    newdict = {'if': differenceRow(stateKey('Actor' + str(index2), 'y'), stateKey(actor.name, 'y'), -1),
                                True: {
-                                   'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y'),
-                                                       1),
-                                   True: True,
+                                   'if': differenceRow(stateKey('Actor' + str(index2), 'y'), stateKey(actor.name, 'y'),
+                                                       0),
+                                   True: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True},
                                    False: {
                                        'if': equalFeatureRow(stateKey(actor.name, 'x'),
                                                              stateKey('Actor' + str(index2), 'x')),
-                                       False: True,
+                                       False: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True},
                                        True: {'if': equalFeatureRow(stateKey('Actor' + str(index2), 'health'), '0'),
-                                              True: True,
+                                              True: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True},
                                               False: False}}},
-                               False: True}
+                               False: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True}}
                     
                     combined_dict = newdict
                     for dict2 in reversed(edl):
                         combined_dict = recursiveFillEmptyDicts(dict2, combined_dict)
                     dict = recursiveFillEmptyDicts(dict, combined_dict)
                 else:
-                    newdict = {'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y'), 0),
+                    newdict = {'if': differenceRow(stateKey('Actor' + str(index2), 'y'), stateKey(actor.name, 'y'), -1),
                                True: {
-                                   'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y'), 1),
+                                   'if': differenceRow(stateKey('Actor' + str(index2), 'y'), stateKey(actor.name, 'y'), 0),
                                    True: {},
                                    False: {
                                        'if': equalFeatureRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x')),
@@ -641,17 +693,25 @@ class Scenario:
                     edl.append(newdict)
             else:
                 
-                newdict = {'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y'), 0),
+                newdict = {'if': differenceRow(stateKey('Actor' + str(index2), 'y'), stateKey(actor.name, 'y'),  -1),
                            True: {
-                               'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y'), 1),
-                               True: True,
+                               'if': differenceRow(stateKey('Actor' + str(index2), 'y'), stateKey(actor.name, 'y'), 0),
+                               True: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True},
                                False: {
                                    'if': equalFeatureRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x')),
-                                   False: True,
+                                   False: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True},
                                    True: {'if': equalFeatureRow(stateKey('Actor' + str(index2), 'health'), '0'),
-                                           True: True,
+                                           True: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True},
                                            False: False}}},
-                           False: True}
+                           False: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True}}
                 
                 combined_dict = newdict
                 for dict2 in reversed(edl):
@@ -668,7 +728,7 @@ class Scenario:
         self.world.setDynamics(stateKey(None, 'turns'), action, tree)
         for index2 in range(0, self.E_ACTORS):
             tree = makeTree({'if': equalFeatureRow(stateKey(actor.name, 'y'), stateKey('Enemy' + str(index2), 'y')),
-                    True: {'if': differenceRow(stateKey(actor.name, 'x'),stateKey('Enemy' + str(index2), 'x'),-2),
+                    True: {'if': differenceRow(stateKey(actor.name, 'x'),stateKey('Enemy' + str(index2), 'x'),-1),
 	                    True: {'if': differenceRow(stateKey(actor.name, 'x'),stateKey('Enemy' + str(index2), 'x'),0),
 		                    True: incrementMatrix(stateKey('Enemy' + str(index2),'health'), 0.0),
 		                    False: {'if':equalFeatureRow(stateKey('Enemy' + str(index2), 'health'), '0'),
@@ -677,7 +737,9 @@ class Scenario:
 	                    False: incrementMatrix(stateKey('Enemy' + str(index2),'health'), 0.0)},
                     False: incrementMatrix(stateKey('Enemy' + str(index2),'health'), 0.0)})
             self.world.setDynamics(stateKey('Enemy' + str(index2), 'health'), action, tree)
-        actor.setLegal(action, makeTree({'if': equalRow(stateKey(actor.name, 'y'), '0'), True:True, False:True}))
+        actor.setLegal(action, makeTree({'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True}))
 
         ##############################
 
@@ -696,7 +758,9 @@ class Scenario:
 	                    False: incrementMatrix(stateKey('Enemy' + str(index2),'health'), 0.0)},
                     False: incrementMatrix(stateKey('Enemy' + str(index2),'health'), 0.0)})
             self.world.setDynamics(stateKey('Enemy' + str(index2), 'health'), action, tree)
-        actor.setLegal(action, makeTree({'if': equalRow(stateKey(actor.name, 'y'), '0'), True:True, False:True}))
+        actor.setLegal(action, makeTree({'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True}))
 
         ##############################
 
@@ -706,7 +770,7 @@ class Scenario:
         self.world.setDynamics(stateKey(None, 'turns'), action, tree)
         for index2 in range(0, self.E_ACTORS):
             tree = makeTree({'if': equalFeatureRow(stateKey(actor.name, 'x'), stateKey('Enemy' + str(index2), 'x')),
-                    True: {'if': differenceRow(stateKey(actor.name, 'y'),stateKey('Enemy' + str(index2), 'y'),-2),
+                    True: {'if': differenceRow(stateKey(actor.name, 'y'),stateKey('Enemy' + str(index2), 'y'),-1),
 	                    True: {'if': differenceRow(stateKey(actor.name, 'y'),stateKey('Enemy' + str(index2), 'y'),0),
 		                    True: incrementMatrix(stateKey('Enemy' + str(index2),'health'), 0.0),
 		                    False: {'if':equalFeatureRow(stateKey('Enemy' + str(index2), 'health'), '0'),
@@ -715,7 +779,9 @@ class Scenario:
 	                    False: incrementMatrix(stateKey('Enemy' + str(index2),'health'), 0.0)},
                     False: incrementMatrix(stateKey('Enemy' + str(index2),'health'), 0.0)})
             self.world.setDynamics(stateKey('Enemy' + str(index2), 'health'), action, tree)
-        actor.setLegal(action, makeTree({'if': equalRow(stateKey(actor.name, 'y'), '0'), True:True, False:True}))
+        actor.setLegal(action, makeTree({'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True}))
 
         ##############################
 
@@ -726,7 +792,7 @@ class Scenario:
         for index2 in range(0, self.E_ACTORS):
             tree = makeTree({'if': equalFeatureRow(stateKey(actor.name, 'x'), stateKey('Enemy' + str(index2), 'x')),
                     True: {'if': differenceRow(stateKey(actor.name, 'y'),stateKey('Enemy' + str(index2), 'y'),0),
-	                    True: {'if': differenceRow(stateKey(actor.name, 'y'),stateKey('Enemy' + str(index2), 'y'),2),
+	                    True: {'if': differenceRow(stateKey(actor.name, 'y'),stateKey('Enemy' + str(index2), 'y'),1),
 		                    True: incrementMatrix(stateKey('Enemy' + str(index2),'health'), 0.0),
 		                    False: {'if':equalFeatureRow(stateKey('Enemy' + str(index2), 'health'), '0'),
                                     True: incrementMatrix(stateKey('Enemy' + str(index2),'health'), 0.0),
@@ -734,7 +800,9 @@ class Scenario:
 	                    False: incrementMatrix(stateKey('Enemy' + str(index2),'health'), 0.0)},
                     False: incrementMatrix(stateKey('Enemy' + str(index2),'health'), 0.0)})
             self.world.setDynamics(stateKey('Enemy' + str(index2), 'health'), action, tree)
-        actor.setLegal(action, makeTree({'if': equalRow(stateKey(actor.name, 'y'), '0'), True:True, False:True}))
+        actor.setLegal(action, makeTree({'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True}))
 
 
     def create_distract_agents(self):
@@ -998,6 +1066,7 @@ class Scenario:
     def create_enemy_agents(self):
         for index in range(0, self.E_ACTORS):
             actor = Agent('Enemy' + str(index))
+            self.enemy_agents.append(actor)
             self.world.addAgent(actor)
             actor.setHorizon(5)
 
@@ -1026,6 +1095,7 @@ class Scenario:
             edl = []
             for index in range(0, self.F_ACTORS):
                 enemy = 'Actor' + str(index)
+
                 actor.setReward(minimizeFeature(stateKey(enemy, 'health')), self.ENEMY[0])
                 actor.setReward(minimizeDifference(stateKey(enemy, 'x'), stateKey(enemy, 'goal_x')),
                                 self.ENEMY[1])
@@ -1077,22 +1147,80 @@ class Scenario:
         edl = []
         for index2 in range(self.F_ACTORS):
             if not dict:
-                dict.update({'if': equalRow(stateKey(actor.name, 'x'), str(self.MAP_SIZE_X)),
+                dict.update({'if': equalRow(stateKey(actor.name, 'x'), str(self.MAP_SIZE_X-1)),
                              True: False,
                              False: {
                                  'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x'),
                                                      -1),
                                  True: {'if': differenceRow(stateKey(actor.name, 'x'),
                                                             stateKey('Actor' + str(index2), 'x'), 0),
-                                        True: {},
+                                        True: {
+                                            'if': differenceRow(stateKey(actor.name, 'x'),
+                                                                stateKey('Actor' + str(index2), 'goal_x'),
+                                                                -1),
+                                            True: {'if': differenceRow(stateKey(actor.name, 'x'),
+                                                                       stateKey('Actor' + str(index2), 'goal_x'), 0),
+                                                   True: {},
+                                                   False: {'if': equalFeatureRow(stateKey(actor.name, 'y'),
+                                                                                 stateKey('Actor' + str(index2), 'goal_y')),
+                                                           True: False,
+                                                           False: {}}},
+                                            False: {}
+                                        },
                                         False: {'if': equalFeatureRow(stateKey(actor.name, 'y'),
                                                                       stateKey('Actor' + str(index2), 'y')),
                                                 True: {'if': equalFeatureRow(stateKey('Actor' + str(index2), 'health'),
                                                                              '0'),
-                                                       True: {},
+                                                       True: {
+
+                                                           'if': differenceRow(stateKey(actor.name, 'x'),
+                                                                               stateKey('Actor' + str(index2),
+                                                                                        'goal_x'),
+                                                                               -1),
+                                                           True: {'if': differenceRow(stateKey(actor.name, 'x'),
+                                                                                      stateKey('Actor' + str(index2),
+                                                                                               'goal_x'), 0),
+                                                                  True: {},
+                                                                  False: {
+                                                                      'if': equalFeatureRow(stateKey(actor.name, 'y'),
+                                                                                            stateKey(
+                                                                                                'Actor' + str(index2),
+                                                                                                'goal_y')),
+                                                                      True: False,
+                                                                      False: {}}},
+                                                           False: {}
+                                                       },
                                                        False: False},
-                                                False: {}}},
-                                 False: {}}})
+                                                False: {
+
+                                                    'if': differenceRow(stateKey(actor.name, 'x'),
+                                                                        stateKey('Actor' + str(index2), 'goal_x'),
+                                                                        -1),
+                                                    True: {'if': differenceRow(stateKey(actor.name, 'x'),
+                                                                               stateKey('Actor' + str(index2),
+                                                                                        'goal_x'), 0),
+                                                           True: {},
+                                                           False: {'if': equalFeatureRow(stateKey(actor.name, 'y'),
+                                                                                         stateKey('Actor' + str(index2),
+                                                                                                  'goal_y')),
+                                                                   True: False,
+                                                                   False: {}}},
+                                                    False: {}
+                                                }}},
+                                 False: {
+
+                                     'if': differenceRow(stateKey(actor.name, 'x'),
+                                                         stateKey('Actor' + str(index2), 'goal_x'),
+                                                         -1),
+                                     True: {'if': differenceRow(stateKey(actor.name, 'x'),
+                                                                stateKey('Actor' + str(index2), 'goal_x'), 0),
+                                            True: {},
+                                            False: {'if': equalFeatureRow(stateKey(actor.name, 'y'),
+                                                                          stateKey('Actor' + str(index2), 'goal_y')),
+                                                    True: False,
+                                                    False: {}}},
+                                     False: {}
+                                 }}})
             else:
                 newdict = {'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x'), -1),
                            True: {
@@ -1118,15 +1246,23 @@ class Scenario:
                                True: {
                                    'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Enemy' + str(index2), 'x'),
                                                        0),
-                                   True: True,
+                                   True: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True},
                                    False: {
                                        'if': equalFeatureRow(stateKey(actor.name, 'y'),
                                                              stateKey('Enemy' + str(index2), 'y')),
-                                       False: True,
+                                       False: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True},
                                        True: {'if': equalFeatureRow(stateKey('Enemy' + str(index2), 'health'), '0'),
-                                              True: True,
+                                              True: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True},
                                               False: False}}},
-                               False: True}
+                               False: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True}}
                     
                     combined_dict = newdict
                     for dict2 in reversed(edl):
@@ -1153,15 +1289,23 @@ class Scenario:
                 newdict = {'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Enemy' + str(index2), 'x'), -1),
                            True: {
                                'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Enemy' + str(index2), 'x'), 0),
-                               True: True,
+                               True: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True},
                                False: {
                                    'if': equalFeatureRow(stateKey(actor.name, 'y'),
                                                          stateKey('Enemy' + str(index2), 'y')),
                                    True: {'if': equalFeatureRow(stateKey('Enemy' + str(index2), 'health'), '0'),
-                                          True: True,
+                                          True: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True},
                                           False: False},
-                                   False: True}},
-                           False: True}
+                                   False: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True}}},
+                           False: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True}}
                 
                 combined_dict = newdict
                 for dict2 in reversed(edl):
@@ -1189,23 +1333,64 @@ class Scenario:
                 dict.update({'if': equalRow(stateKey(actor.name, 'x'), '0'),
                              True: False,
                              False: {
-                                 'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x'),
-                                                     0),
-                                 True: {'if': differenceRow(stateKey(actor.name, 'x'),
-                                                            stateKey('Actor' + str(index2), 'x'), 1),
-                                        True: {},
+                                 'if': differenceRow(stateKey('Actor' + str(index2), 'x'), stateKey(actor.name, 'x'),
+                                                     -1),
+                                 True: {'if': differenceRow(stateKey('Actor' + str(index2), 'x'), stateKey(actor.name, 'x'), 0),
+                                        True: {
+                                            'if': differenceRow(stateKey('Actor' + str(index2), 'goal_x'),
+                                                                stateKey(actor.name, 'x'),
+                                                                -1),
+                                            True: {'if': differenceRow(stateKey('Actor' + str(index2), 'goal_x'),
+                                                                       stateKey(actor.name, 'x'), 0),
+                                                   True: {},
+                                                   False: {'if': equalFeatureRow(stateKey(actor.name, 'y'),
+                                                                                 stateKey('Actor' + str(index2), 'goal_y')),
+                                                           True: False,
+                                                           False: {}}},
+                                            False: {}
+                                        },
                                         False: {'if': equalFeatureRow(stateKey(actor.name, 'y'),
                                                                       stateKey('Actor' + str(index2), 'y')),
                                                 True: {'if': equalFeatureRow(stateKey('Actor' + str(index2), 'health'),
                                                                              '0'),
-                                                       True: {},
+                                                       True: {'if': differenceRow(stateKey('Actor' + str(index2), 'goal_x'),
+                                                                stateKey(actor.name, 'x'),
+                                                                -1),
+                                            True: {'if': differenceRow(stateKey('Actor' + str(index2), 'goal_x'),
+                                                                       stateKey(actor.name, 'x'), 0),
+                                                   True: {},
+                                                   False: {'if': equalFeatureRow(stateKey(actor.name, 'y'),
+                                                                                 stateKey('Actor' + str(index2), 'goal_y')),
+                                                           True: False,
+                                                           False: {}}},
+                                            False: {}},
                                                        False: False},
-                                                False: {}}},
-                                 False: {}}})
+                                                False: {'if': differenceRow(stateKey('Actor' + str(index2), 'goal_x'),
+                                                                stateKey(actor.name, 'x'),
+                                                                -1),
+                                            True: {'if': differenceRow(stateKey('Actor' + str(index2), 'goal_x'),
+                                                                       stateKey(actor.name, 'x'), 0),
+                                                   True: {},
+                                                   False: {'if': equalFeatureRow(stateKey(actor.name, 'y'),
+                                                                                 stateKey('Actor' + str(index2), 'goal_y')),
+                                                           True: False,
+                                                           False: {}}},
+                                            False: {}}}},
+                                 False: {'if': differenceRow(stateKey('Actor' + str(index2), 'goal_x'),
+                                                                stateKey(actor.name, 'x'),
+                                                                -1),
+                                            True: {'if': differenceRow(stateKey('Actor' + str(index2), 'goal_x'),
+                                                                       stateKey(actor.name, 'x'), 0),
+                                                   True: {},
+                                                   False: {'if': equalFeatureRow(stateKey(actor.name, 'y'),
+                                                                                 stateKey('Actor' + str(index2), 'goal_y')),
+                                                           True: False,
+                                                           False: {}}},
+                                            False: {}}}})
             else:
-                newdict = {'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x'), 0),
+                newdict = {'if': differenceRow(stateKey('Actor' + str(index2), 'x'), stateKey(actor.name, 'x'), -1),
                            True: {
-                               'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x'), 1),
+                               'if': differenceRow(stateKey('Actor' + str(index2), 'x'), stateKey(actor.name, 'x'), 0),
                                True: {},
                                False: {
                                    'if': equalFeatureRow(stateKey(actor.name, 'y'),
@@ -1223,29 +1408,37 @@ class Scenario:
             elif index2 != (self.E_ACTORS - 1):
                 if index2 + 1 == (self.E_ACTORS - 1) and 'Enemy' + str(index2 + 1) == actor.name:
                     
-                    newdict = {'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Enemy' + str(index2), 'x'), 0),
+                    newdict = {'if': differenceRow(stateKey('Actor' + str(index2), 'x'), stateKey(actor.name, 'x'), -1),
                                True: {
-                                   'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Enemy' + str(index2), 'x'),
-                                                       1),
-                                   True: True,
+                                   'if': differenceRow(stateKey('Enemy' + str(index2), 'x'), stateKey(actor.name, 'x'),
+                                                       0),
+                                   True: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True},
                                    False: {
                                        'if': equalFeatureRow(stateKey(actor.name, 'y'),
                                                              stateKey('Enemy' + str(index2), 'y')),
-                                       False: True,
+                                       False: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True},
                                        True: {'if': equalFeatureRow(stateKey('Enemy' + str(index2), 'health'), '0'),
-                                              True: True,
+                                              True: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True},
                                               False: False}}},
-                               False: True}
+                               False: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True}}
                     
                     combined_dict = newdict
                     for dict2 in reversed(edl):
                         combined_dict = recursiveFillEmptyDicts(dict2, combined_dict)
                     dict = recursiveFillEmptyDicts(dict, combined_dict)
                 else:
-                    newdict = {'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Enemy' + str(index2), 'x'), 0),
+                    newdict = {'if': differenceRow(stateKey('Enemy' + str(index2), 'x'), stateKey(actor.name, 'x'), -1),
                                True: {
-                                   'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Enemy' + str(index2), 'x'),
-                                                       1),
+                                   'if': differenceRow(stateKey('Enemy' + str(index2), 'x'), stateKey(actor.name, 'x'),
+                                                       0),
                                    True: {},
                                    False: {
                                        'if': equalFeatureRow(stateKey(actor.name, 'y'),
@@ -1259,18 +1452,26 @@ class Scenario:
                     edl.append(newdict)
             else:
                 
-                newdict = {'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Enemy' + str(index2), 'x'), 0),
+                newdict = {'if': differenceRow(stateKey('Enemy' + str(index2), 'x'), stateKey(actor.name, 'x'),  -1),
                            True: {
-                               'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Enemy' + str(index2), 'x'), 1),
-                               True: True,
+                               'if': differenceRow(stateKey('Enemy' + str(index2), 'x'), stateKey(actor.name, 'x'), 0),
+                               True: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True},
                                False: {
                                    'if': equalFeatureRow(stateKey(actor.name, 'y'),
                                                          stateKey('Enemy' + str(index2), 'y')),
                                    True: {'if': equalFeatureRow(stateKey('Enemy' + str(index2), 'health'), '0'),
-                                          True: True,
+                                          True: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True},
                                           False: False},
-                                   False: True}},
-                           False: True}
+                                   False: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True}}},
+                           False: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True}}
                 
                 combined_dict = newdict
                 for dict2 in reversed(edl):
@@ -1295,22 +1496,64 @@ class Scenario:
         edl = []
         for index2 in range(self.F_ACTORS):
             if not dict:
-                dict.update({'if': equalRow(stateKey(actor.name, 'y'), str(self.MAP_SIZE_Y)),
+                dict.update({'if': equalRow(stateKey(actor.name, 'y'), str(self.MAP_SIZE_Y-1)),
                              True: False,
                              False: {
                                  'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y'),
                                                      -1),
                                  True: {'if': differenceRow(stateKey(actor.name, 'y'),
                                                             stateKey('Actor' + str(index2), 'y'), 0),
-                                        True: {},
+                                        True: {
+                                            'if': differenceRow(stateKey(actor.name, 'y'),
+                                                                stateKey('Actor' + str(index2), 'goal_y'),
+                                                                -1),
+                                            True: {'if': differenceRow(stateKey(actor.name, 'y'),
+                                                                       stateKey('Actor' + str(index2), 'goal_y'), 0),
+                                                   True: {},
+                                                   False: {'if': equalFeatureRow(stateKey(actor.name, 'x'),
+                                                                                 stateKey('Actor' + str(index2), 'goal_x')),
+                                                           True: False,
+                                                           False: {}}},
+                                            False: {}
+                                        },
                                         False: {'if': equalFeatureRow(stateKey(actor.name, 'x'),
                                                                       stateKey('Actor' + str(index2), 'x')),
                                                 True: {'if': equalFeatureRow(stateKey('Actor' + str(index2), 'health'),
                                                                              '0'),
-                                                       True: {},
+                                                       True: {'if': differenceRow(stateKey(actor.name, 'y'),
+                                                                stateKey('Actor' + str(index2), 'goal_y'),
+                                                                -1),
+                                            True: {'if': differenceRow(stateKey(actor.name, 'y'),
+                                                                       stateKey('Actor' + str(index2), 'goal_y'), 0),
+                                                   True: {},
+                                                   False: {'if': equalFeatureRow(stateKey(actor.name, 'x'),
+                                                                                 stateKey('Actor' + str(index2), 'goal_x')),
+                                                           True: False,
+                                                           False: {}}},
+                                            False: {}},
                                                        False: False},
-                                                False: {}}},
-                                 False: {}}})
+                                                False: {'if': differenceRow(stateKey(actor.name, 'y'),
+                                                                stateKey('Actor' + str(index2), 'goal_y'),
+                                                                -1),
+                                            True: {'if': differenceRow(stateKey(actor.name, 'y'),
+                                                                       stateKey('Actor' + str(index2), 'goal_y'), 0),
+                                                   True: {},
+                                                   False: {'if': equalFeatureRow(stateKey(actor.name, 'x'),
+                                                                                 stateKey('Actor' + str(index2), 'goal_x')),
+                                                           True: False,
+                                                           False: {}}},
+                                            False: {}}}},
+                                 False: {'if': differenceRow(stateKey(actor.name, 'y'),
+                                                                stateKey('Actor' + str(index2), 'goal_y'),
+                                                                -1),
+                                            True: {'if': differenceRow(stateKey(actor.name, 'y'),
+                                                                       stateKey('Actor' + str(index2), 'goal_y'), 0),
+                                                   True: {},
+                                                   False: {'if': equalFeatureRow(stateKey(actor.name, 'x'),
+                                                                                 stateKey('Actor' + str(index2), 'goal_x')),
+                                                           True: False,
+                                                           False: {}}},
+                                            False: {}}}})
             else:
                 newdict = {'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y'), -1),
                            True: {
@@ -1336,15 +1579,23 @@ class Scenario:
                                True: {
                                    'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Enemy' + str(index2), 'y'),
                                                        0),
-                                   True: True,
+                                   True: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True},
                                    False: {
                                        'if': equalFeatureRow(stateKey(actor.name, 'x'),
                                                              stateKey('Enemy' + str(index2), 'x')),
-                                       False: True,
+                                       False: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True},
                                        True: {'if': equalFeatureRow(stateKey('Enemy' + str(index2), 'health'), '0'),
-                                              True: True,
+                                              True: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True},
                                               False: False}}},
-                               False: True}
+                               False: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True}}
                     
                     combined_dict = newdict
                     for dict2 in reversed(edl):
@@ -1371,15 +1622,23 @@ class Scenario:
                 newdict = {'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Enemy' + str(index2), 'y'), -1),
                            True: {
                                'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Enemy' + str(index2), 'y'), 0),
-                               True: True,
+                               True: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True},
                                False: {
                                    'if': equalFeatureRow(stateKey(actor.name, 'x'),
                                                          stateKey('Enemy' + str(index2), 'x')),
                                    True: {'if': equalFeatureRow(stateKey('Enemy' + str(index2), 'health'), '0'),
-                                          True: True,
+                                          True: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True},
                                           False: False},
-                                   False: True}},
-                           False: True}
+                                   False: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True}}},
+                           False: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True}}
                 
                 combined_dict = newdict
                 for dict2 in reversed(edl):
@@ -1407,23 +1666,72 @@ class Scenario:
                 dict.update({'if': equalRow(stateKey(actor.name, 'y'), '0'),
                              True: False,
                              False: {
-                                 'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y'),
-                                                     0),
-                                 True: {'if': differenceRow(stateKey(actor.name, 'y'),
-                                                            stateKey('Actor' + str(index2), 'y'), 1),
-                                        True: {},
+                                 'if': differenceRow(stateKey('Actor' + str(index2), 'y'), stateKey(actor.name, 'y'),
+                                                     -1),
+                                 True: {'if': differenceRow(stateKey('Actor' + str(index2), 'y'), stateKey(actor.name, 'y'),
+                                                             0),
+                                        True: {
+                                            'if': differenceRow(stateKey('Actor' + str(index2), 'goal_y'),
+                                                                stateKey(actor.name, 'y'),
+                                                                -1),
+                                            True: {'if': differenceRow(stateKey('Actor' + str(index2), 'goal_y'),
+                                                                       stateKey(actor.name, 'y'),
+                                                                       0),
+                                                   True: {},
+                                                   False: {'if': equalFeatureRow(stateKey(actor.name, 'x'),
+                                                                                 stateKey('Actor' + str(index2), 'goal_x')),
+                                                           True: False,
+                                                           False: {}}},
+                                            False: {}
+                                        },
                                         False: {'if': equalFeatureRow(stateKey(actor.name, 'x'),
                                                                       stateKey('Actor' + str(index2), 'x')),
                                                 True: {'if': equalFeatureRow(stateKey('Actor' + str(index2), 'health'),
                                                                              '0'),
-                                                       True: {},
+                                                       True: {
+                                            'if': differenceRow(stateKey('Actor' + str(index2), 'goal_y'),
+                                                                stateKey(actor.name, 'y'),
+                                                                -1),
+                                            True: {'if': differenceRow(stateKey('Actor' + str(index2), 'goal_y'),
+                                                                       stateKey(actor.name, 'y'),
+                                                                       0),
+                                                   True: {},
+                                                   False: {'if': equalFeatureRow(stateKey(actor.name, 'x'),
+                                                                                 stateKey('Actor' + str(index2), 'goal_x')),
+                                                           True: False,
+                                                           False: {}}},
+                                            False: {}},
                                                        False: False},
-                                                False: {}}},
-                                 False: {}}})
+                                                False: {
+                                            'if': differenceRow(stateKey('Actor' + str(index2), 'goal_y'),
+                                                                stateKey(actor.name, 'y'),
+                                                                -1),
+                                            True: {'if': differenceRow(stateKey('Actor' + str(index2), 'goal_y'),
+                                                                       stateKey(actor.name, 'y'),
+                                                                       0),
+                                                   True: {},
+                                                   False: {'if': equalFeatureRow(stateKey(actor.name, 'x'),
+                                                                                 stateKey('Actor' + str(index2), 'goal_x')),
+                                                           True: False,
+                                                           False: {}}},
+                                            False: {}}}},
+                                 False: {
+                                            'if': differenceRow(stateKey('Actor' + str(index2), 'goal_y'),
+                                                                stateKey(actor.name, 'y'),
+                                                                -1),
+                                            True: {'if': differenceRow(stateKey('Actor' + str(index2), 'goal_y'),
+                                                                       stateKey(actor.name, 'y'),
+                                                                       0),
+                                                   True: {},
+                                                   False: {'if': equalFeatureRow(stateKey(actor.name, 'x'),
+                                                                                 stateKey('Actor' + str(index2), 'goal_x')),
+                                                           True: False,
+                                                           False: {}}},
+                                            False: {}}}})
             else:
-                newdict = {'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y'), 0),
+                newdict = {'if': differenceRow(stateKey('Actor' + str(index2), 'y'), stateKey(actor.name, 'y'), -1),
                            True: {
-                               'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y'), 1),
+                               'if': differenceRow(stateKey('Actor' + str(index2), 'y'), stateKey(actor.name, 'y'), 0),
                                True: {},
                                False: {
                                    'if': equalFeatureRow(stateKey(actor.name, 'x'),
@@ -1441,29 +1749,37 @@ class Scenario:
             elif index2 != (self.E_ACTORS - 1):
                 if index2 + 1 == (self.E_ACTORS - 1) and 'Enemy' + str(index2 + 1) == actor.name:
                     
-                    newdict = {'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Enemy' + str(index2), 'y'), 0),
+                    newdict = {'if': differenceRow(stateKey('Enemy' + str(index2), 'y'), stateKey(actor.name, 'y'), -1),
                                True: {
-                                   'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Enemy' + str(index2), 'y'),
-                                                       1),
-                                   True: True,
+                                   'if': differenceRow(stateKey('Enemy' + str(index2), 'y'), stateKey(actor.name, 'y'),
+                                                       0),
+                                   True: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True},
                                    False: {
                                        'if': equalFeatureRow(stateKey(actor.name, 'x'),
                                                              stateKey('Enemy' + str(index2), 'x')),
-                                       False: True,
+                                       False: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True},
                                        True: {'if': equalFeatureRow(stateKey('Enemy' + str(index2), 'health'), '0'),
-                                              True: True,
+                                              True: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True},
                                               False: False}}},
-                               False: True}
+                               False: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True}}
                     
                     combined_dict = newdict
                     for dict2 in reversed(edl):
                         combined_dict = recursiveFillEmptyDicts(dict2, combined_dict)
                     dict = recursiveFillEmptyDicts(dict, combined_dict)
                 else:
-                    newdict = {'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Enemy' + str(index2), 'y'), 0),
+                    newdict = {'if': differenceRow(stateKey('Enemy' + str(index2), 'y'), stateKey(actor.name, 'y'), -1),
                                True: {
-                                   'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Enemy' + str(index2), 'y'),
-                                                       1),
+                                   'if': differenceRow(stateKey('Enemy' + str(index2), 'y'), stateKey(actor.name, 'y'),
+                                                       0),
                                    True: {},
                                    False: {
                                        'if': equalFeatureRow(stateKey(actor.name, 'x'),
@@ -1477,18 +1793,26 @@ class Scenario:
                     edl.append(newdict)
             else:
                 
-                newdict = {'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Enemy' + str(index2), 'y'), 0),
+                newdict = {'if': differenceRow(stateKey('Enemy' + str(index2), 'y'), stateKey(actor.name, 'y'), -1),
                            True: {
-                               'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Enemy' + str(index2), 'y'), 1),
-                               True: True,
+                               'if': differenceRow(stateKey('Enemy' + str(index2), 'y'), stateKey(actor.name, 'y'), 0),
+                               True: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True},
                                False: {
                                    'if': equalFeatureRow(stateKey(actor.name, 'x'),
                                                          stateKey('Enemy' + str(index2), 'x')),
                                    True: {'if': equalFeatureRow(stateKey('Enemy' + str(index2), 'health'), '0'),
-                                          True: True,
+                                          True: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True},
                                           False: False},
-                                   False: True}},
-                           False: True}
+                                   False: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True}}},
+                           False: {'if': equalFeatureRow(stateKey(actor.name, 'health'), '0'),
+                                                True: False,
+                                                False: True}}
                 
                 combined_dict = newdict
                 for dict2 in reversed(edl):
@@ -1504,10 +1828,10 @@ class Scenario:
         action = actor.addAction({'verb': 'AttackRight'})
         tree = makeTree(incrementMatrix('turns', 1.0))
         self.world.setDynamics(stateKey(None, 'turns'), action, tree)
-        for index2 in range(0, self.E_ACTORS):
+        for index2 in range(0, self.F_ACTORS):
             tree = makeTree({'if': equalFeatureRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y')),
                              True: {'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x'),
-                                                        -2),
+                                                        -1),
                                     True: {'if': differenceRow(stateKey(actor.name, 'x'),
                                                                stateKey('Actor' + str(index2), 'x'), 0),
                                            True: incrementMatrix(stateKey('Actor' + str(index2), 'health'), 0.0),
@@ -1527,12 +1851,12 @@ class Scenario:
         action = actor.addAction({'verb': 'AttackLeft'})
         tree = makeTree(incrementMatrix('turns', 1.0))
         self.world.setDynamics(stateKey(None, 'turns'), action, tree)
-        for index2 in range(0, self.E_ACTORS):
+        for index2 in range(0, self.F_ACTORS):
             tree = makeTree({'if': equalFeatureRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y')),
-                             True: {'if': differenceRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x'),
-                                                        0),
-                                    True: {'if': differenceRow(stateKey(actor.name, 'x'),
-                                                               stateKey('Actor' + str(index2), 'x'), 2),
+                             True: {'if': differenceRow(stateKey('Actor' + str(index2), 'x'), stateKey(actor.name, 'x'),
+                                                        -1),
+                                    True: {'if': differenceRow(stateKey('Actor' + str(index2), 'x'), stateKey(actor.name, 'x'),
+                                                                0),
                                            True: incrementMatrix(stateKey('Actor' + str(index2), 'health'), 0.0),
                                            False: {
                                                'if': equalFeatureRow(stateKey('Actor' + str(index2), 'health'), '0'),
@@ -1550,10 +1874,10 @@ class Scenario:
         action = actor.addAction({'verb': 'AttackUp'})
         tree = makeTree(incrementMatrix('turns', 1.0))
         self.world.setDynamics(stateKey(None, 'turns'), action, tree)
-        for index2 in range(0, self.E_ACTORS):
+        for index2 in range(0, self.F_ACTORS):
             tree = makeTree({'if': equalFeatureRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x')),
                              True: {'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y'),
-                                                        -2),
+                                                        -1),
                                     True: {'if': differenceRow(stateKey(actor.name, 'y'),
                                                                stateKey('Actor' + str(index2), 'y'), 0),
                                            True: incrementMatrix(stateKey('Actor' + str(index2), 'health'), 0.0),
@@ -1573,12 +1897,12 @@ class Scenario:
         action = actor.addAction({'verb': 'AttackDown'})
         tree = makeTree(incrementMatrix('turns', 1.0))
         self.world.setDynamics(stateKey(None, 'turns'), action, tree)
-        for index2 in range(0, self.E_ACTORS):
+        for index2 in range(0, self.F_ACTORS):
             tree = makeTree({'if': equalFeatureRow(stateKey(actor.name, 'x'), stateKey('Actor' + str(index2), 'x')),
-                             True: {'if': differenceRow(stateKey(actor.name, 'y'), stateKey('Actor' + str(index2), 'y'),
-                                                        0),
-                                    True: {'if': differenceRow(stateKey(actor.name, 'y'),
-                                                               stateKey('Actor' + str(index2), 'y'), 2),
+                             True: {'if': differenceRow(stateKey('Actor' + str(index2), 'y'), stateKey(actor.name, 'y'),
+                                                        -1),
+                                    True: {'if': differenceRow(stateKey('Actor' + str(index2), 'y'),
+                                                               stateKey(actor.name, 'y'), 0),
                                            True: incrementMatrix(stateKey('Actor' + str(index2), 'health'), 0.0),
                                            False: {
                                                'if': equalFeatureRow(stateKey('Actor' + str(index2), 'health'), '0'),
@@ -1708,13 +2032,14 @@ class Scenario:
         # helicopter_score = int(self.world.getState('Distractor'+str(0), 'cost').domain()[0])
         #
         # overall = soldier_enemy_distance - soldier_goal_distance + 20 - helicopter_score
+        win = int(self.world.getState(None,'turns').domain()[0])
         return win, perform
 
     def run_without_visual(self):
         while not self.world.terminated():
             result = self.world.step()
         return self.return_score()
-        # self.evaluate_score()
+        self.evaluate_score()
 
     def run_with_visual(self):
         pyglet.resource.path = ['../Resources/teamwork']
@@ -1748,7 +2073,7 @@ class Scenario:
                 batch=goals_batch)
             )
 
-        agent_image = pyglet.resource.image("soldier_blue.png")
+        agent_image = pyglet.resource.image("soldier_blue_3.png")
         agents_batch = pyglet.graphics.Batch()
         agents = []
         for index in range(0, self.F_ACTORS):
@@ -1759,7 +2084,7 @@ class Scenario:
                 batch=agents_batch)
             )
 
-        enemy_image = pyglet.resource.image("soldier_red.png")
+        enemy_image = pyglet.resource.image("soldier_red_3.png")
         enemies_batch = pyglet.graphics.Batch()
         enemies = []
         for index in range(0, self.E_ACTORS):
@@ -1822,7 +2147,7 @@ class Scenario:
         def update(dt):
             if not self.paused:
                 result = self.world.step()
-                # self.world.explain(result, 2)
+                self.world.explain(result, 2)
                 if self.world.terminated():
                     self.evaluate_score()
                     window.close()
@@ -1830,16 +2155,69 @@ class Scenario:
             for index in range(0, self.F_ACTORS):
                 agents[index].x = int(self.world.getState('Actor' + str(index), 'x').domain()[0]) * 32
                 agents[index].y = int(self.world.getState('Actor' + str(index), 'y').domain()[0]) * 32
-                if int(self.world.getState('Actor' + str(index), 'health').domain()[0]) == 0:
-                    agents[index].img = pyglet.resource.image("rock.png")
+                if int(self.world.getState('Actor' + str(index), 'health').domain()[0]) == 2:
+                    agents[index] = pyglet.sprite.Sprite(
+                        img=pyglet.resource.image("soldier_blue_2.png"),
+                        x=agents[index].x,
+                        y=agents[index].y,
+                        batch=agents_batch)
+                elif int(self.world.getState('Actor' + str(index), 'health').domain()[0]) == 1:
+                    agents[index] = pyglet.sprite.Sprite(
+                        img=pyglet.resource.image("soldier_blue_1.png"),
+                        x=agents[index].x,
+                        y=agents[index].y,
+                        batch=agents_batch)
+                elif int(self.world.getState('Actor' + str(index), 'health').domain()[0]) == 0:
+                    agents[index] = pyglet.sprite.Sprite(
+                        img=pyglet.resource.image("scenario.png"),
+                        x=agents[index].x,
+                        y=agents[index].y,
+                        batch=agents_batch)
+                    # del self.world.agents["Actor" + str(index)]
+                    # self.world.setOrder(self.world.agents.keys())
+
+                    # self.world.setOrder([a for a in self.world.agents.keys() if a != "Actor"+str(index)])
+                    # for i in range(0,self.F_ACTORS):
+                    #     self.friendly_agents[i].beliefs.deleteKeys([keys.turnKey("Actor" + str(index)),
+                    #                     keys.modelKey("Actor" + str(index))])
+                    # for i in range(0,self.E_ACTORS):
+                    #     self.enemy_agents[i].beliefs.deleteKeys([keys.turnKey("Actor" + str(index)),
+                    #                     keys.modelKey("Actor" + str(index))])
 
             for index in range(0, self.E_ACTORS):
                 actor = self.friendly_agents[index]
                 # print(actor.decide(self.world.state[None].domain()[0], horizon = 5))
                 enemies[index].x = int(self.world.getState('Enemy' + str(index), 'x').domain()[0]) * 32
                 enemies[index].y = int(self.world.getState('Enemy' + str(index), 'y').domain()[0]) * 32
-                if int(self.world.getState('Enemy' + str(index), 'health').domain()[0]) == 0:
-                    enemies[index].img = pyglet.resource.image("rock.png")
+                if int(self.world.getState('Enemy' + str(index), 'health').domain()[0]) == 2:
+                    enemies[index] = pyglet.sprite.Sprite(
+                        img=pyglet.resource.image("soldier_red_2.png"),
+                        x=enemies[index].x,
+                        y=enemies[index].y,
+                        batch=enemies_batch)
+                elif int(self.world.getState('Enemy' + str(index), 'health').domain()[0]) == 1:
+                    enemies[index] = pyglet.sprite.Sprite(
+                        img=pyglet.resource.image("soldier_red_1.png"),
+                        x=enemies[index].x,
+                        y=enemies[index].y,
+                        batch=enemies_batch)
+                elif int(self.world.getState('Enemy' + str(index), 'health').domain()[0]) == 0 and 'Enemy'+str(index) in self.world.agents.keys():
+                    enemies[index] = pyglet.sprite.Sprite(
+                        img=pyglet.resource.image("scenario.png"),
+                        x=enemies[index].x,
+                        y=enemies[index].y,
+                        batch=enemies_batch)
+                    # del self.world.agents["Enemy"+str(index)]
+                    # self.world.setOrder(self.world.agents.keys())
+
+                    # self.world.setOrder([e for e in self.world.agents.keys() if e != "Enemy" + str(index)])
+
+                    # beliefs.deleteKeys([keys.turnKey("Enemy" + str(index)),
+                    #                     keys.modelKey("Enemy" + str(index))])
+                    #
+                    # beliefs.deleteKeys([keys.turnKey("Enemy" + str(index)),
+                    #                     keys.modelKey("Enemy" + str(index))])
+
 
             # for index in range(0, self.D_ACTORS):
             #     distractors[index].x = int(self.world.getState('Distractor' + str(index), 'x').domain()[0]) * 32
@@ -1855,24 +2233,24 @@ class Scenario:
         # target=pyglet.app.run()
 
 def run(genome,visual):
-    s1 = genome[0]
-    s2 = genome[1]
+    # s1 = genome[0]
+    # s2 = genome[1]
     b1 = genome[2]
     b2 = genome[3]
-    h1 = genome[4]
-    h2 = genome[5]
-    d1 = genome[6]
-    d2 = genome[7]
+    # h1 = genome[4]
+    # h2 = genome[5]
+    # d1 = genome[6]
+    # d2 = genome[7]
 
     run = Scenario(
         MAP_SIZE_X=7,
         MAP_SIZE_Y=7,
         F_ACTORS=3,
-        F_START_LOC=[str(random.randint(0,6))+","+str(random.randint(0,6)),str(random.randint(0,6))+","+str(random.randint(0,6)),str(random.randint(0,6))+","+str(random.randint(0,6))],
+        F_START_LOC=["3,6", "3,2", "6,2"],
         F_GOAL_LOC=["5,5","5,5","5,5"],
         F_ENERGY=[10.0],
         E_ACTORS=3,
-        E_START_LOC=["5,4","4,5","6,5"],
+        E_START_LOC=["5,4", "4,5", "6,5"],
         E_PATROL_RANGE=5,
         # D_ACTORS=1,
         # D_START_LOC=["2,3"],
@@ -1882,8 +2260,8 @@ def run(genome,visual):
         BASE=[b1, b2],
         # DISTRACTOR=[h1, h2],
         # SUPPLIER=[d1, d2],
-        ENEMY=[0.7, -0.1],
-        AGENT=[[1.0, 1.0, -1.0],[1.0, 1.0, -1.0],[1.0, 1.0, -1.0]])
+        ENEMY=[0.7, -0.0],
+        AGENT=[[1.0, 4., -0.25],[1.0, 4., -0.25],[1.0, 4., -4.]])
     score = None
     if visual:
         score = run.run_with_visual()
