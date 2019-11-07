@@ -4,7 +4,7 @@ import sys, os
 for r2 in {0.25,0.5,1.,2.,4.}:
     for r3 in {0.25,0.5,1.,2.,4.}:
         filename = str(r2)+"_"+ str(r3) + ".txt"
-        path = os.getcwd() + "/rewardtrials6/"
+        path = os.getcwd() + "/rewardtrials7/"
         scorefile = open(path + filename, "r")
         line = scorefile.readline()
         total = 0
