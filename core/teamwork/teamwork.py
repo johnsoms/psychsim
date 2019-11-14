@@ -2615,7 +2615,7 @@ class Scenario:
             ending_y = int(self.world.getState('Actor' + str(index), 'y').domain()[0])
             soldier_goal_distance[index] = abs(self.f_get_goal_x(0) - ending_x) + abs(
                     self.f_get_goal_y(0) - ending_y)
-            soldier_enemy_defenses = int(self.world.getState('Actor' + str(index), 'defenses').domain()[0])
+            soldier_enemy_defenses[index] = int(self.world.getState('Actor' + str(index), 'defenses').domain()[0])
             if soldier_goal_distance[index] == 0 and soldier_health > 0:
                 win = 1.0
                 # perform[index] = 1.0
@@ -2639,7 +2639,7 @@ class Scenario:
         #
         # helicopter_score = int(self.world.getState('Distractor'+str(0), 'cost').domain()[0])
         #
-        for index in range(0,perform.length()):
+        for index in range(0,len(perform)):
             if perform[index]==0.:
                 perform[index] = soldier_enemy_defenses[index] - soldier_goal_distance[index] + 20
         turns = int(self.world.getState(None,'turns').domain()[0])
@@ -2946,7 +2946,7 @@ def get_tutor_instruction(resultsdict,reward, win_strats,lose_strats):
     goal_ast = 1.0
     mindist = float('inf')
     for strat in win_strats:
-        if math.sqrt((strat[0] - curr_pro)**2+(strat[1] - curr_ast)**2) > mindist:
+        if math.sqrt((strat[0] - curr_pro)**2+(strat[1] - curr_ast)**2) < mindist:
             mindist = math.sqrt((strat[0] - curr_pro)**2+(strat[1] - curr_ast)**2)
             goal_pro = strat[0]
             goal_ast = strat[1]
@@ -2954,6 +2954,67 @@ def get_tutor_instruction(resultsdict,reward, win_strats,lose_strats):
 
     return (goal_atk-curr_atk, goal_pro-curr_pro, goal_ast-curr_ast)
 
+def get_indv_tutor_instruction(resultsdict, indv_rewards, win_strats, lose_strats, target):
+    t = None
+    if target == "min":
+        min_mindist = float('inf')
+        for i in range(len(indv_rewards)):
+            # atk = indv_rewards[t]['attack']
+            pro = indv_rewards[i]['protect']
+            ast = indv_rewards[i]['assist']
+            # goal_pro = 1.0
+            # goal_ast = 1.0
+            mindist = float('inf')
+            for strat in win_strats:
+                print(math.sqrt((strat[0] - pro) ** 2 + (strat[1] - ast) ** 2))
+                if math.sqrt((strat[0] - pro) ** 2 + (strat[1] - ast) ** 2) < mindist:
+                    mindist = math.sqrt((strat[0] - pro) ** 2 + (strat[1] - ast) ** 2)
+                    # goal_pro = strat[0]
+                    # goal_ast = strat[1]
+            if mindist < min_mindist:
+                min_mindist = mindist
+                t = i
+    elif target == "max":
+        max_mindist = float('-inf')
+        for i in range(len(indv_rewards)):
+            # atk = indv_rewards[t]['attack']
+            pro = indv_rewards[i]['protect']
+            ast = indv_rewards[i]['assist']
+            # goal_pro = 1.0
+            # goal_ast = 1.0
+            mindist = float('inf')
+            for strat in win_strats:
+                dist = math.sqrt((strat[0] - pro) ** 2 + (strat[1] - ast) ** 2)
+                if dist < mindist:
+                    mindist = dist
+                    # goal_pro = strat[0]
+                    # goal_ast = strat[1]
+                elif dist == mindist:
+                    coin = random.randint(0,1)
+                    if coin:
+                        mindist = dist
+                        # goal_pro = strat[0]
+                        # goal_ast = strat[1]
+            if mindist > max_mindist:
+                max_mindist = mindist
+                t = i
+    elif target == "random":
+        t = random.randint(0,len(indv_rewards))
+
+    curr_atk = indv_rewards[t]['attack']
+    curr_pro = indv_rewards[t]['protect']
+    curr_ast = indv_rewards[t]['assist']
+    goal_pro = 1.0
+    goal_ast = 1.0
+    mindist = float('inf')
+    for strat in win_strats:
+        if math.sqrt((strat[0] - curr_pro) ** 2 + (strat[1] - curr_ast) ** 2) < mindist:
+            mindist = math.sqrt((strat[0] - curr_pro) ** 2 + (strat[1] - curr_ast) ** 2)
+            goal_pro = strat[0]
+            goal_ast = strat[1]
+    goal_atk = 1.0
+
+    return (goal_atk - curr_atk, goal_pro - curr_pro, goal_ast - curr_ast,t)
 
 if __name__ == '__main__':
     logging.basicConfig()
@@ -2966,7 +3027,7 @@ if __name__ == '__main__':
     parser.add_argument('-s', '--async', action='store_true', help='Let agents act simultaneously')
     parser.add_argument('-a', '--alpha', type=float, default=0.2,
                         help='Learning rate (when no visualization) [default: %(default)s]')
-    parser.add_argument('-l', '--lambda', type=float, default=0.0,
+    parser.add_argument('-l', '--lambda', type=float, default=0.334,
                         help='Adoption rate (when no visualization) of tutor suggestion [default: %(default)s]')
     parser.add_argument('-g', '--gamma', type=float, default=0.0,
                         help='Rate (when no visualization) at which teammates learn from each other\'s performance [default: %(default)s]')
@@ -2974,9 +3035,22 @@ if __name__ == '__main__':
                         help='Probability that agents make random exploration moves in the reward space [default: %(default)s]')
     parser.add_argument('-r', '--ro', type=float, default=0.0,
                         help='Weight of random exploration deviations relative to standard learning [default: %(default)s]')
+    parser.add_argument('-t', '--target', default="random",
+                        help='Which target the tutor instructs when diverse learning is enabled [default: %(default)s]')
+    parser.add_argument('-x', '--0R2', type=float, default=1.,
+                        help='Which target the tutor instructs when diverse learning is enabled [default: %(default)s]')
+    parser.add_argument('-y', '--0R3', type=float, default=1.,
+                        help='Which target the tutor instructs when diverse learning is enabled [default: %(default)s]')
+    parser.add_argument('-z', '--1R2', type=float, default=1.,
+                        help='Which target the tutor instructs when diverse learning is enabled [default: %(default)s]')
+    parser.add_argument('-w', '--1R3', type=float, default=1.,
+                        help='Which target the tutor instructs when diverse learning is enabled [default: %(default)s]')
+    parser.add_argument('-j', '--2R2', type=float, default=1.,
+                        help='Which target the tutor instructs when diverse learning is enabled [default: %(default)s]')
+    parser.add_argument('-k', '--2R3', type=float, default=1.,
+                        help='Which target the tutor instructs when diverse learning is enabled [default: %(default)s]')
 
     args = vars(parser.parse_args())
-
     level = getattr(logging, args['debug'].upper(), None)
     if not isinstance(level, int):
         raise ValueError('Invalid debug level: %s' % args['debug'])
@@ -2998,24 +3072,35 @@ if __name__ == '__main__':
     else:
         log = []
         reward = {'attack': 1.,
-                  'protect': 0.,
-                  'assist': 0.}
-        indv_rewards = [{'attack': 1.,
-                         'protect': 1.,
-                         'assist': 1.},
-                        {'attack': 1.,
-                         'protect': 1.,
-                         'assist': 1.},
-                        {'attack': 1.,
-                         'protect': 1.,
-                         'assist': 1.}
-            ]
+                  'protect': args["0R2"],
+                  'assist': args["0R3"]}
+        # indv_rewards = [{'attack': 1.,
+        #                  'protect': 1.,
+        #                  'assist': 1.},
+        #                 {'attack': 1.,
+        #                  'protect': 1.,
+        #                  'assist': 1.},
+        #                 {'attack': 1.,
+        #                  'protect': 1.,
+        #                  'assist': 1.}
+        #     ]
 
-        if not args['diverse']:
-            indv_rewards = [reward,
-                            reward,
-                            reward
-                            ]
+        indv_rewards = [{'attack': 1.,
+                  'protect': args["0R2"],
+                  'assist': args["0R3"]},
+                        {'attack': 1.,
+                         'protect': args["1R2"],
+                         'assist': args["1R3"]},
+                        {'attack': 1.,
+                         'protect': args["2R2"],
+                         'assist': args["2R3"]}
+                        ]
+
+        # if not args['diverse']:
+        #     indv_rewards = [reward,
+        #                     reward,
+        #                     reward
+        #                     ]
         for trial in range(args['number']):
             run = Scenario(
                 MAP_SIZE_X=7,
@@ -3038,17 +3123,37 @@ if __name__ == '__main__':
                 # SUPPLIER=[d1, d2],
                 ENEMY=[1., 1., 1.],
                 AGENT=[[indv_rewards[i]['attack'], indv_rewards[i]['protect'], indv_rewards[i]['assist']] for i in range(3)],
-                ABILITY=[[1.0, 1.0], [1.0, 1.0], [1.0, 1.0]],
+                ABILITY=[[1., 1.], [1., 1.], [1., 1.]],
                 ASYNC=args['async'])
             result = run.run_without_visual()
-            result.update({'Rattack': reward['attack'],
-                           'Rprotect': reward['protect'],
-                           'Rassist': reward['assist'],
+            result.update({'Rattack0': indv_rewards[0]['attack'],
+                           'Rprotect0': indv_rewards[0]['protect'],
+                           'Rassist0': indv_rewards[0]['assist'],
+                           'Rattack1': indv_rewards[1]['attack'],
+                           'Rprotect1': indv_rewards[1]['protect'],
+                           'Rassist1': indv_rewards[1]['assist'],
+                           'Rattack2': indv_rewards[2]['attack'],
+                           'Rprotect2': indv_rewards[2]['protect'],
+                           'Rassist2': indv_rewards[2]['assist'],
                            'trial': trial,
                            'team': result['team'],
                            'turns': result['turns'],
                            'alpha': args['alpha'],
                            })
+            # result = {'Rattack0': indv_rewards[0]['attack'],
+            #                'Rprotect0': indv_rewards[0]['protect'],
+            #                'Rassist0': indv_rewards[0]['assist'],
+            #                'Rattack1': indv_rewards[1]['attack'],
+            #                'Rprotect1': indv_rewards[1]['protect'],
+            #                'Rassist1': indv_rewards[1]['assist'],
+            #                'Rattack2': indv_rewards[2]['attack'],
+            #                'Rprotect2': indv_rewards[2]['protect'],
+            #                'Rassist2': indv_rewards[2]['assist'],
+            #                'trial': trial,
+            #                'team': 0.,
+            #                'turns': 99999999,
+            #                'alpha': args['alpha'],
+            #                }
             logging.info(result)
             log.append(result)
 
@@ -3069,6 +3174,9 @@ if __name__ == '__main__':
                             }
             win_strats = []
             lose_strats = []
+            targ = args['target']
+            if not args['diverse']:
+                targ = "group"
             with open('rewardtrials10/results.csv') as csvfile:
                 reader = csv.reader(csvfile, delimiter=',')
                 vals = ["0.25","0.5","1","2","4"]
@@ -3084,29 +3192,46 @@ if __name__ == '__main__':
                         i_c+=1
                     i_c = 0
                     i_r+=1
+            if not args['diverse']:
+                (tutor_attack, tutor_protect, tutor_assist) = get_tutor_instruction(resultsdict, reward, win_strats, lose_strats)
 
-            (tutor_attack, tutor_protect, tutor_assist) = get_tutor_instruction(resultsdict, reward, win_strats, lose_strats)
+                delta = args['lambda'] * tutor_attack
+                totalDelta += abs(delta)
+                reward['attack'] += delta
 
-            delta = args['lambda'] * tutor_attack
-            totalDelta += abs(delta)
-            reward['attack'] += delta
+                delta = args['lambda'] * tutor_protect
+                totalDelta += abs(delta)
+                reward['protect'] += delta
 
-            delta = args['lambda'] * tutor_protect
-            totalDelta += abs(delta)
-            reward['protect'] += delta
+                delta = args['lambda'] * tutor_assist
+                totalDelta += abs(delta)
+                reward['assist'] += delta
+            else:
+                instructions = get_indv_tutor_instruction(resultsdict, indv_rewards, win_strats, lose_strats, targ)
+                print(instructions)
+                t = instructions[3]
+                delta = (args['lambda']*1.333) * instructions[0]
+                totalDelta += (abs(delta)/len(indv_rewards))
+                indv_rewards[t]['attack'] += delta
 
-            delta = args['lambda'] * tutor_assist
-            totalDelta += abs(delta)
-            reward['assist'] += delta
+                delta = (args['lambda']*1.333) * instructions[1]
+                totalDelta += (abs(delta) / len(indv_rewards))
+                indv_rewards[t]['protect'] += delta
 
-            best_performer = None
+                delta = (args['lambda'] *1.333) * instructions[2]
+                totalDelta += (abs(delta) / len(indv_rewards))
+                indv_rewards[t]['assist'] += delta
+
+                print(indv_rewards)
+
+            best_performer = 0
             maxscore = -1
-            for i in range(0,len(result["indv"])):
-                if result["indv"][i]>maxscore:
+            for i in range(0,len(indv_rewards)):
+                if -9999>maxscore:
                     best_performer = i
                     maxscore = result["indv"][i]
 
-            (imitate_attack, imitate_protect, imitate_assist) = (indv_rewards[i]['attack'],indv_rewards[i]['protect'],indv_rewards[i]['assist'],)
+            (imitate_attack, imitate_protect, imitate_assist) = (indv_rewards[best_performer]['attack'],indv_rewards[best_performer]['protect'],indv_rewards[best_performer]['assist'])
 
             delta = args['gamma'] * imitate_attack
             totalDelta += abs(delta)
@@ -3129,54 +3254,74 @@ if __name__ == '__main__':
                 e_factor = 0. if x>=args["epsilon"] else args["ro"]
                 logging.info('Tie')
                 # Base needs to be more aggressive in attacking red flag
-                delta = args['alpha'] * ((4. - reward['attack']) + e_factor*(random.uniform(0. - reward['attack'], 4. - reward['attack'])))
-                totalDelta += abs(delta)
-                reward['attack'] += delta
-                if delta <= 0:
-                    delta = args['alpha'] * ((4. - reward['assist']) + e_factor*(random.uniform(0. - reward['assist'],4. - reward['assist'])))
-                    totalDelta += abs(delta)
-                    reward['assist'] += delta
-                else:
-                    delta = args['alpha'] * (e_factor * (random.uniform(0. - reward['assist'],4. - reward['assist'])))
-                    totalDelta += abs(delta)
-                    reward['assist'] += delta
+                # delta = args['alpha'] * ((4. - reward['attack']) + e_factor*(random.uniform(0. - reward['attack'], 4. - reward['attack'])))
+                # totalDelta += abs(delta)
+                # reward['attack'] += delta
+
                 # Agent needs to be less aggressive in protecting blue flag
                 delta = args['alpha'] * ((0. - reward['protect']) + e_factor*(random.uniform(0. - reward['protect'],4. - reward['protect'])))
                 totalDelta += abs(delta)
                 reward['protect'] += delta
+                if not args["diverse"]:
+                    for i in range(len(indv_rewards)):
+                        indv_rewards[i]["protect"] += delta
+
+                if delta <= 0:
+                    delta = args['alpha'] * ((4. - reward['assist']) + e_factor*(random.uniform(0. - reward['assist'],4. - reward['assist'])))
+                    totalDelta += abs(delta)
+                    reward['assist'] += delta
+                    if not args["diverse"]:
+                        for i in range(len(indv_rewards)):
+                            indv_rewards[i]["assist"]+=delta
+                else:
+                    delta = args['alpha'] * (e_factor * (random.uniform(0. - reward['assist'],4. - reward['assist'])))
+                    totalDelta += abs(delta)
+                    reward['assist'] += delta
+                    if not args["diverse"]:
+                        for i in range(len(indv_rewards)):
+                            indv_rewards[i]["assist"]+=delta
 
             else:
                 x = random.random()
                 e_factor = 0. if x >= args["epsilon"] else args["ro"]
                 logging.info('Blue Team Lost')
-                # Base needs to be more aggressive in sending Distractor
-                delta = args['alpha'] * ((0. - reward['attack'])+ e_factor*(random.uniform(0. - reward['attack'],4. - reward['attack'])))
-                totalDelta += abs(delta)
-                reward['attack'] += delta
+                # # Base needs to be more aggressive in sending Distractor
+                # delta = args['alpha'] * ((0. - reward['attack'])+ e_factor*(random.uniform(0. - reward['attack'],4. - reward['attack'])))
+                # totalDelta += abs(delta)
+                # reward['attack'] += delta
                 # Agent needs to be more aggressive in pursuing goal
                 delta = args['alpha'] * ((4. - reward['protect'])+ e_factor*(random.uniform(0. - reward['protect'],4. - reward['protect'])))
                 totalDelta += abs(delta)
                 reward['protect'] += delta
+                if not args["diverse"]:
+                    for i in range(len(indv_rewards)):
+                        indv_rewards[i]["protect"] += delta
                 if delta <= 0:
                     delta = args['alpha'] * ((4. - reward['assist'])+ e_factor*(random.uniform(0. - reward['assist'],4. - reward['assist'])))
                     totalDelta += abs(delta)
                     reward['assist'] += delta
+                    if not args["diverse"]:
+                        for i in range(len(indv_rewards)):
+                            indv_rewards[i]["assist"]+=delta
                 else:
                     if delta <= 0:
                         delta = args['alpha'] * ((4. - reward['assist']) + e_factor * (random.uniform(0. - reward['assist'],4. - reward['assist'])))
                         totalDelta += abs(delta)
                         reward['assist'] += delta
+                        if not args["diverse"]:
+                            for i in range(len(indv_rewards)):
+                                indv_rewards[i]["assist"] += delta
 
-            if not args['diverse']:
-                indv_rewards = [reward,
-                                reward,
-                                reward
-                                ]
+            # if not args['diverse']:
+            #     indv_rewards = [reward,
+            #                     reward,
+            #                     reward
+            #                     ]
 
             logging.info('Total delta: %5.2f' % (totalDelta))
             result['delta'] = totalDelta
-        fields = ['trial', 'Rattack', 'Rprotect', 'Rassist', 'alpha', 'team', 'turns', 'delta']
-        with open(os.path.join('output', '%s.csv' % (time)), 'w') as csvfile:
+        fields = ['trial', 'Rattack0', 'Rprotect0', 'Rassist0', 'Rattack1', 'Rprotect1', 'Rassist1','Rattack2', 'Rprotect2', 'Rassist2', 'alpha', 'team', 'turns', 'delta']
+        with open(os.path.join('output', '%s.csv' % ("SLOWtutoring_"+targ+"_1-"+str(args["0R2"])+str(args["0R3"])+"_1-"+str(args["1R2"])+str(args["1R3"])+"_1-"+str(args["2R2"])+str(args["2R3"]))), 'w') as csvfile:
             writer = csv.DictWriter(csvfile, fields, extrasaction='ignore')
             writer.writeheader()
             for result in log:
